@@ -149,7 +149,7 @@ body {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 16px 16px calc(var(--tab-bar-height) + env(safe-area-inset-bottom, 34px) + 8px);
+  padding: 16px 16px calc(var(--tab-bar-height) + env(safe-area-inset-bottom, 0px) + 8px);
 }
 
 /* ============================================================
@@ -269,8 +269,8 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  height: calc(var(--tab-bar-height) + env(safe-area-inset-bottom, 34px));
-  padding-bottom: env(safe-area-inset-bottom, 34px);
+  height: calc(var(--tab-bar-height) + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   background: var(--color-tab-bar);
   backdrop-filter: blur(20px) saturate(1.8);
   -webkit-backdrop-filter: blur(20px) saturate(1.8);
