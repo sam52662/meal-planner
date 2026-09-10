@@ -5,7 +5,7 @@ import type { GitHubConfig } from '../api/github'
 
 type TestStatus = 'idle' | 'testing' | 'ok' | 'error'
 
-export default function Settings() {
+export default function Settings({ onSaved }: { onSaved?: () => void }) {
   const existing = loadConfig()
   const [token, setToken] = useState(existing?.token ?? '')
   const [owner, setOwner] = useState(existing?.owner ?? '')
@@ -20,6 +20,7 @@ export default function Settings() {
     saveConfig(config)
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
+    onSaved?.()
   }
 
   async function handleTest() {

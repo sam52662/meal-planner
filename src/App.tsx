@@ -3,18 +3,32 @@ import './styles/global.css'
 import MealPlan from './components/MealPlan'
 import Inventory from './components/Inventory'
 import Settings from './components/Settings'
+import { useConnectionStatus, type ConnectionStatus } from './hooks/useConnectionStatus'
 
 type Tab = 'meals' | 'inventory' | 'settings'
 
+const CONNECTION_LABELS: Record<ConnectionStatus, string> = {
+  unknown: 'Nicht konfiguriert',
+  checking: 'Verbinde …',
+  connected: 'Verbunden',
+  error: 'Keine Verbindung',
+}
+
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('meals')
+  const { status, check } = useConnectionStatus()
 
   return (
     <div className="app-shell">
+      <div className={`connection-bar ${status}`} onClick={check} style={{ cursor: 'pointer' }}>
+        <div className="connection-dot" />
+        <span>{CONNECTION_LABELS[status]}</span>
+      </div>
+
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         {activeTab === 'meals' && <MealPlan />}
         {activeTab === 'inventory' && <Inventory />}
-        {activeTab === 'settings' && <Settings />}
+        {activeTab === 'settings' && <Settings onSaved={check} />}
       </div>
 
       <nav className="tab-bar">
