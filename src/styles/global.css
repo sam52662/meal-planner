@@ -31,8 +31,6 @@
   --gradient-header: linear-gradient(135deg, #5b6af0 0%, #8b5cf6 100%);
   --gradient-today: linear-gradient(135deg, #5b6af0 0%, #8b5cf6 100%);
   --tab-bar-height: 62px;
-  --tab-bar-total: 96px;
-  --home-indicator: 34px;
   --radius-sm: 12px;
   --radius-md: 16px;
   --radius-lg: 22px;
@@ -267,18 +265,24 @@ body {
    ============================================================ */
 .tab-bar {
   position: fixed;
-  bottom: 0;
   left: 0;
   right: 0;
-  height: calc(var(--tab-bar-height) + env(safe-area-inset-bottom, 34px));
-  padding-bottom: env(safe-area-inset-bottom, 34px);
+  bottom: 0;
+  min-height: calc(
+    var(--tab-bar-height)
+    + env(safe-area-inset-bottom, 0px)
+  );
+  padding-top: 8px;
+  padding-bottom: max(
+    8px,
+    env(safe-area-inset-bottom, 0px)
+  );
   background: var(--color-tab-bar);
   backdrop-filter: blur(20px) saturate(1.8);
   -webkit-backdrop-filter: blur(20px) saturate(1.8);
   border-top: 1px solid var(--color-border);
   display: flex;
   align-items: flex-start;
-  padding-top: 8px;
   z-index: 100;
 }
 
@@ -462,11 +466,6 @@ body {
   box-shadow: var(--shadow-sm);
   margin-bottom: 12px;
   overflow: hidden;
-  border: 1px solid var(--color-border);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  transition: box-shadow 0.2s, opacity 0.2s;
-}
   border: 1px solid var(--color-border);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
