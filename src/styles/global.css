@@ -482,7 +482,115 @@ body {
 }
 
 /* ============================================================
-   Section headers
+   Storage Sections (Inventory)
+   ============================================================ */
+.storage-section {
+  margin-bottom: 20px;
+}
+
+.storage-section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  margin-bottom: 0;
+  border-bottom: none;
+}
+
+.freezer-header {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.18) 0%, rgba(99, 102, 241, 0.12) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-bottom: none;
+}
+
+.fridge-header {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.18) 0%, rgba(52, 211, 153, 0.12) 100%);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-bottom: none;
+}
+
+.storage-section-icon {
+  font-size: 26px;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface);
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+}
+
+.storage-section-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.storage-section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: -0.2px;
+}
+
+.storage-section-sub {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.storage-add-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: var(--color-surface);
+  color: var(--color-accent);
+  font-size: 20px;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.15s;
+  flex-shrink: 0;
+  line-height: 1;
+  padding-bottom: 1px;
+}
+
+.storage-add-btn:active {
+  transform: scale(0.9);
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.storage-section .inventory-card {
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  margin-bottom: 0;
+}
+
+.freezer-header + .inventory-card {
+  border-top: 1px solid rgba(59, 130, 246, 0.15);
+  border-left: 1px solid rgba(59, 130, 246, 0.15);
+  border-right: 1px solid rgba(59, 130, 246, 0.15);
+  border-bottom: 1px solid rgba(59, 130, 246, 0.15);
+}
+
+.fridge-header + .inventory-card {
+  border-top: 1px solid rgba(16, 185, 129, 0.15);
+  border-left: 1px solid rgba(16, 185, 129, 0.15);
+  border-right: 1px solid rgba(16, 185, 129, 0.15);
+  border-bottom: 1px solid rgba(16, 185, 129, 0.15);
+}
+
+/* ============================================================
+   Section headers (legacy, kept for compatibility)
    ============================================================ */
 .section-header {
   display: flex;
@@ -558,16 +666,17 @@ body {
 }
 
 .item-emoji-wrap {
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
   background: var(--color-surface-2);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-strong);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
+  font-size: 24px;
   flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
 }
 
 .item-info {

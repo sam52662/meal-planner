@@ -190,34 +190,51 @@ export default function Inventory() {
       {status === 'saving' && <div className="sync-bar" />}
       <div className="page-header">
         <h1>Vorräte</h1>
-        {!hasConfig && <p className="subtitle">GitHub in den Einstellungen konfigurieren</p>}
+        <p className="subtitle">
+          {data.length === 0
+            ? 'Noch keine Artikel eingelagert'
+            : `${data.length} Artikel · ${freezerItems.length} Tiefkühler · ${fridgeItems.length} Kühlschrank`}
+        </p>
+        {!hasConfig && <p className="subtitle" style={{ marginTop: 4, color: 'rgba(255,255,255,0.5)' }}>GitHub in den Einstellungen konfigurieren</p>}
       </div>
 
       <div className="scroll-content">
-        <div className="section-header">
-          <div className="section-title"><div className="section-dot freezer" />Tiefkühler</div>
-          <span className="section-count">{freezerItems.length}</span>
-        </div>
-        <div className="inventory-card">
-          {freezerItems.length === 0
-            ? <div className="empty-row">❄️ Keine Artikel im Tiefkühler</div>
-            : freezerItems.map(item => (
-                <ItemRow key={item.id} item={item} onEdit={() => setEditing(item)} />
-              ))
-          }
+        <div className="storage-section">
+          <div className="storage-section-header freezer-header">
+            <div className="storage-section-icon">❄️</div>
+            <div className="storage-section-info">
+              <span className="storage-section-title">Tiefkühler</span>
+              <span className="storage-section-sub">{freezerItems.length} {freezerItems.length === 1 ? 'Artikel' : 'Artikel'}</span>
+            </div>
+            <button className="storage-add-btn" onClick={() => setShowAdd(true)}>+</button>
+          </div>
+          <div className="inventory-card">
+            {freezerItems.length === 0
+              ? <div className="empty-row">Noch nichts eingelagert</div>
+              : freezerItems.map(item => (
+                  <ItemRow key={item.id} item={item} onEdit={() => setEditing(item)} />
+                ))
+            }
+          </div>
         </div>
 
-        <div className="section-header">
-          <div className="section-title"><div className="section-dot fridge" />Kühlschrank</div>
-          <span className="section-count">{fridgeItems.length}</span>
-        </div>
-        <div className="inventory-card">
-          {fridgeItems.length === 0
-            ? <div className="empty-row">🌡️ Keine Artikel im Kühlschrank</div>
-            : fridgeItems.map(item => (
-                <ItemRow key={item.id} item={item} onEdit={() => setEditing(item)} />
-              ))
-          }
+        <div className="storage-section">
+          <div className="storage-section-header fridge-header">
+            <div className="storage-section-icon">🌡️</div>
+            <div className="storage-section-info">
+              <span className="storage-section-title">Kühlschrank</span>
+              <span className="storage-section-sub">{fridgeItems.length} {fridgeItems.length === 1 ? 'Artikel' : 'Artikel'}</span>
+            </div>
+            <button className="storage-add-btn" onClick={() => setShowAdd(true)}>+</button>
+          </div>
+          <div className="inventory-card">
+            {fridgeItems.length === 0
+              ? <div className="empty-row">Noch nichts eingelagert</div>
+              : fridgeItems.map(item => (
+                  <ItemRow key={item.id} item={item} onEdit={() => setEditing(item)} />
+                ))
+            }
+          </div>
         </div>
       </div>
 
