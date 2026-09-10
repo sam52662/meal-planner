@@ -55,3 +55,55 @@ Antworte NUR mit gültigem JSON ohne Markdown, exakt in diesem Format:
     return { name, recipe: '' }
   }
 }
+
+export async function generateShoppingList(
+  apiKey: string,
+  meals: string[],
+  inventory: InventoryItem[]
+): Promise<string[]> {
+  const mealList = meals.filter(Boolean).join(', ')
+  if (!mealList) return []
+  const inventoryList = inventory.length > 0 ? ` Bereits vorhanden: ${inventory.map(i => i.name).join(', ')}.` : ''
+  const prompt = `Erstelle eine Einkaufsliste für diese Gerichte: ${mealList}.${inventoryList} Liste nur Zutaten die noch nicht vorhanden sind. Antworte NUR mit einem JSON-Array von Strings, z.B. ["Nudeln","Tomaten","Käse"]. Keine Mengenangaben, nur Zutatennamen.`
+
+  const res = await fetch(`${GEMINI_BASE}?key=${apiKey}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { temperature: 0.3, maxOutputTokens: 512 },
+    }),
+  })
+  if (!res.ok) throw new Error(`Gemini API Fehler: ${res.status}`)
+  const json = await res.json()
+  const text = (json?.candidates?.[0]?.content?.parts?.[0]?.text as string ?? '').trim()
+  const clean = text.replace(/^```(?:json)?\n?/i, '').replace(/\n?```$/, '').trim()
+  try {
+    const parsed = JSON.parse(clean)
+    if (Array.isArray(parsed)) return parsed.filter((i): i is string => typeof i === 'string')
+  } catch {}
+  return []
+}
+
+export async function checkUsesInventory(
+  apiKey: string,
+  mealName: string,
+  inventory: InventoryItem[]
+): Promise<boolean> {
+  if (!inventory.length) return false
+  const inventoryList = inventory.map(i => i.name).join(', ')
+  const prompt = `Gericht: "${mealName}". Vorrat: ${inventoryList}. Werden für dieses Gericht wahrscheinlich Zutaten aus dem Vorrat benötigt? Antworte NUR mit true oder false.`
+
+  const res = await fetch(`${GEMINI_BASE}?key=${apiKey}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { temperature: 0, maxOutputTokens: 8 },
+    }),
+  })
+  if (!res.ok) return false
+  const json = await res.json()
+  const text = (json?.candidates?.[0]?.content?.parts?.[0]?.text as string ?? '').toLowerCase().trim()
+  return text.startsWith('true')
+}

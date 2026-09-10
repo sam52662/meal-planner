@@ -4,6 +4,7 @@ export interface Meal {
   type: MealType
   name: string
   recipe?: string
+  usesInventory?: boolean
   note?: string
 }
 

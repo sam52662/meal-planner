@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import type React from 'react'
 import { useGitHubFile } from '../hooks/useGitHub'
 import { loadGeminiKey } from '../hooks/useGitHub'
-import { suggestMeal } from '../api/gemini'
+import { suggestMeal, checkUsesInventory, generateShoppingList } from '../api/gemini'
 import type { MealPlanData, MealType, DayPlan, InventoryData, Meal } from '../types'
 
 const MEAL_LABELS: Record<MealType, string> = {
@@ -142,6 +142,9 @@ export default function MealPlan() {
   const [pendingSuggestion, setPendingSuggestion] = useState<{
     date: string; mealType: MealType; name: string; recipe: string
   } | null>(null)
+  const [shoppingList, setShoppingList] = useState<string[] | null>(null)
+  const [shoppingChecked, setShoppingChecked] = useState<Set<number>>(new Set())
+  const [shoppingLoading, setShoppingLoading] = useState(false)
 
   const weekDates = getWeekDates(weekOffset)
   const todayIso = isoDate(new Date())
@@ -157,13 +160,13 @@ export default function MealPlan() {
     }, 0)
   }
 
-  function updateMeal(date: string, mealType: MealType, name: string, recipe = '') {
+  function updateMeal(date: string, mealType: MealType, name: string, recipe = '', usesInventory?: boolean) {
     setData(prev => {
       const days = [...prev]
       const idx = days.findIndex(d => d.date === date)
       if (idx === -1) {
         if (!name) return days
-        days.push({ date, meals: [{ type: mealType, name, recipe: recipe || undefined }] })
+        days.push({ date, meals: [{ type: mealType, name, recipe: recipe || undefined, usesInventory }] })
         return days
       }
       const day: DayPlan = { ...days[idx], meals: [...days[idx].meals] }
@@ -171,13 +174,22 @@ export default function MealPlan() {
       if (!name) {
         day.meals = day.meals.filter(m => m.type !== mealType)
       } else if (mIdx === -1) {
-        day.meals.push({ type: mealType, name, recipe: recipe || undefined })
+        day.meals.push({ type: mealType, name, recipe: recipe || undefined, usesInventory })
       } else {
-        day.meals[mIdx] = { ...day.meals[mIdx], name, recipe: recipe || undefined }
+        day.meals[mIdx] = { ...day.meals[mIdx], name, recipe: recipe || undefined, usesInventory }
       }
       days[idx] = day
       return days
     })
+
+    if (name) {
+      const geminiKey = loadGeminiKey()
+      if (geminiKey && inventory.length > 0 && usesInventory === undefined) {
+        checkUsesInventory(geminiKey, name, inventory).then(result => {
+          updateMeal(date, mealType, name, recipe, result)
+        }).catch(() => {})
+      }
+    }
   }
 
   function weekLabel() {
@@ -215,12 +227,40 @@ export default function MealPlan() {
 
   const editingMealObj = editing ? getMealObj(editing.date, editing.mealType) : null
 
+  async function handleGenerateShopping() {
+    const geminiKey = loadGeminiKey()
+    if (!geminiKey) {
+      setSuggestionError('Bitte zuerst den Gemini API-Key in den Einstellungen eintragen.')
+      setTimeout(() => setSuggestionError(null), 3000)
+      return
+    }
+    setShoppingLoading(true)
+    try {
+      const allMeals = weekDates.flatMap(date =>
+        (['breakfast', 'lunch', 'dinner'] as MealType[]).map(t => getMealObj(isoDate(date), t)?.name ?? '')
+      )
+      const list = await generateShoppingList(geminiKey, allMeals, inventory)
+      setShoppingList(list)
+      setShoppingChecked(new Set())
+    } catch (err) {
+      setSuggestionError(err instanceof Error ? err.message : 'KI-Fehler')
+      setTimeout(() => setSuggestionError(null), 4000)
+    } finally {
+      setShoppingLoading(false)
+    }
+  }
+
   return (
     <>
       {status === 'saving' && <div className="sync-bar" />}
 
       <div className="page-header">
-        <h1>Wochenplan</h1>
+        <div className="page-header-row">
+          <h1>Wochenplan</h1>
+          <button className="shopping-btn" onClick={handleGenerateShopping} disabled={shoppingLoading} title="Einkaufsliste erstellen">
+            {shoppingLoading ? '⏳' : '🛒'}
+          </button>
+        </div>
         <p className="subtitle">
           {weekOffset === 0
             ? `${filled} von ${total} Mahlzeiten geplant`
@@ -281,6 +321,7 @@ export default function MealPlan() {
                 const mealObj = getMealObj(iso, mealType)
                 const meal = mealObj?.name ?? ''
                 const hasRecipe = !!mealObj?.recipe
+                const usesInventory = mealObj?.usesInventory
                 return (
                   <div key={mealType} className="meal-row" onClick={() => {
                     if (mealObj?.recipe) setViewingRecipe({ date: iso, mealType })
@@ -294,6 +335,9 @@ export default function MealPlan() {
                       </div>
                       {hasRecipe && (
                         <div className="recipe-badge">📋 Rezept</div>
+                      )}
+                      {usesInventory && (
+                        <div className="recipe-badge">🥕 Vorrat</div>
                       )}
                     </div>
                     <button
@@ -313,6 +357,43 @@ export default function MealPlan() {
           )
         })}
       </div>
+
+      {shoppingList !== null && (
+        <div className="sheet-overlay" onClick={() => setShoppingList(null)}>
+          <div className="sheet" onClick={e => e.stopPropagation()}>
+            <div className="sheet-handle" />
+            <div className="sheet-title">🛒 Einkaufsliste</div>
+            <div className="sheet-body">
+              {shoppingList.length === 0 ? (
+                <p style={{ textAlign: 'center', color: 'var(--color-text-secondary)', padding: '16px 0' }}>
+                  Alle Zutaten bereits im Vorrat vorhanden.
+                </p>
+              ) : (
+                <ul className="shopping-list">
+                  {shoppingList.map((item, i) => (
+                    <li
+                      key={i}
+                      className={`shopping-item${shoppingChecked.has(i) ? ' checked' : ''}`}
+                      onClick={() => setShoppingChecked(prev => {
+                        const next = new Set(prev)
+                        next.has(i) ? next.delete(i) : next.add(i)
+                        return next
+                      })}
+                    >
+                      <span className="shopping-check">{shoppingChecked.has(i) ? '✓' : ''}</span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <div className="sheet-actions">
+              <button className="btn btn-secondary" onClick={() => setShoppingChecked(new Set())}>Zurücksetzen</button>
+              <button className="btn btn-primary" onClick={() => setShoppingList(null)}>Fertig</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {viewingRecipe && (() => {
         const mealObj = getMealObj(viewingRecipe.date, viewingRecipe.mealType)
