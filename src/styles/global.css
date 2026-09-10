@@ -120,6 +120,7 @@ body {
   justify-content: center;
   gap: 6px;
   padding: 5px 16px;
+  padding-top: calc(5px + var(--safe-top));
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.3px;
@@ -176,7 +177,6 @@ body {
 .page-header {
   background: var(--gradient-header);
   padding: 20px 20px 24px;
-  padding-top: calc(20px + var(--safe-top));
   position: relative;
   overflow: hidden;
 }
@@ -238,6 +238,8 @@ body {
   align-items: flex-start;
   padding-top: 10px;
   z-index: 100;
+  /* Extend background behind safe area on iOS */
+  box-shadow: 0 calc(var(--safe-bottom) * -1) 0 0 var(--color-tab-bar);
 }
 
 .tab-item {
