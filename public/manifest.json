@@ -6,8 +6,8 @@
   "scope": "/meal-planner/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#12121a",
-  "theme_color": "#12121a",
+  "background_color": "#181824",
+  "theme_color": "#181824",
   "icons": [
     {
       "src": "/meal-planner/icon.svg",
