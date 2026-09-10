@@ -48,6 +48,10 @@ Regeln:
 
   const json = await res.json()
   const text = json?.candidates?.[0]?.content?.parts?.[0]?.text as string | undefined
-  if (!text) throw new Error('Keine Antwort von der KI')
-  return text.trim().replace(/\.$/, '')
+  if (!text) {
+    console.error('Gemini response:', JSON.stringify(json))
+    throw new Error('Keine Antwort von der KI')
+  }
+  const result = text.trim().replace(/\.$/, '').split('\n')[0].trim()
+  return result
 }
