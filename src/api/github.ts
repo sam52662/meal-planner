@@ -34,7 +34,8 @@ export async function getFile<T>(config: GitHubConfig, path: string): Promise<Fi
     throw new Error(`GitHub API error: ${res.status}`)
   }
   const json = await res.json()
-  const content = JSON.parse(atob(json.content.replace(/\n/g, ''))) as T
+  const raw = Uint8Array.from(atob(json.content.replace(/\n/g, '')), c => c.charCodeAt(0))
+  const content = JSON.parse(new TextDecoder().decode(raw)) as T
   return { data: content, sha: json.sha as string }
 }
 
@@ -46,7 +47,8 @@ export async function putFile<T>(
   message: string
 ): Promise<string> {
   const { token, owner, repo, branch } = config
-  const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))))
+  const encoded = new TextEncoder().encode(JSON.stringify(data, null, 2))
+  const content = btoa(String.fromCharCode(...encoded))
   const body: Record<string, unknown> = { message, content, branch }
   if (sha) body.sha = sha
 
