@@ -78,6 +78,7 @@
 html, body {
   height: 100%;
   overscroll-behavior: none;
+  background: var(--gradient-header);
 }
 
 body {
@@ -101,7 +102,6 @@ body {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding-top: var(--safe-top);
 }
 
 .scroll-content {
@@ -176,6 +176,7 @@ body {
 .page-header {
   background: var(--gradient-header);
   padding: 20px 20px 24px;
+  padding-top: calc(20px + var(--safe-top));
   position: relative;
   overflow: hidden;
 }
