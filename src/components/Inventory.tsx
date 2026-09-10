@@ -28,14 +28,7 @@ function AddItemSheet({ initialStorage, onAdd, onClose }: AddItemSheetProps) {
 
   function handleAdd() {
     if (!name.trim()) return
-    onAdd({
-      name: name.trim(),
-      emoji,
-      quantity: parseFloat(quantity) || 1,
-      unit,
-      storage,
-      expiresAt: expiresAt || undefined,
-    })
+    onAdd({ name: name.trim(), emoji, quantity: parseFloat(quantity) || 1, unit, storage, expiresAt: expiresAt || undefined })
     onClose()
   }
 
@@ -49,19 +42,13 @@ function AddItemSheet({ initialStorage, onAdd, onClose }: AddItemSheetProps) {
             <label>Emoji</label>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
               {EMOJI_SUGGESTIONS.map(e => (
-                <button
-                  key={e}
-                  onClick={() => setEmoji(e)}
-                  style={{
-                    fontSize: 24,
-                    width: 40,
-                    height: 40,
-                    border: `2px solid ${emoji === e ? 'var(--color-accent)' : 'transparent'}`,
-                    borderRadius: 10,
-                    background: emoji === e ? 'var(--color-accent-light)' : 'var(--color-surface-2)',
-                    cursor: 'pointer',
-                  }}
-                >
+                <button key={e} onClick={() => setEmoji(e)} style={{
+                  fontSize: 22, width: 42, height: 42,
+                  border: `2px solid ${emoji === e ? 'var(--color-accent)' : 'transparent'}`,
+                  borderRadius: 12,
+                  background: emoji === e ? 'var(--color-accent-light)' : 'var(--color-surface-2)',
+                  cursor: 'pointer', transition: 'all 0.15s',
+                }}>
                   {e}
                 </button>
               ))}
@@ -69,32 +56,18 @@ function AddItemSheet({ initialStorage, onAdd, onClose }: AddItemSheetProps) {
           </div>
           <div className="form-group">
             <label>Name</label>
-            <input
-              className="form-input"
-              placeholder="z.B. Hähnchenbrust"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              autoFocus
-            />
+            <input className="form-input" placeholder="z.B. Hähnchenbrust" value={name}
+              onChange={e => setName(e.target.value)} autoFocus />
           </div>
           <div className="form-row">
             <div className="form-group">
               <label>Menge</label>
-              <input
-                className="form-input"
-                type="number"
-                inputMode="decimal"
-                value={quantity}
-                onChange={e => setQuantity(e.target.value)}
-              />
+              <input className="form-input" type="number" inputMode="decimal"
+                value={quantity} onChange={e => setQuantity(e.target.value)} />
             </div>
             <div className="form-group">
               <label>Einheit</label>
-              <select
-                className="form-input"
-                value={unit}
-                onChange={e => setUnit(e.target.value)}
-              >
+              <select className="form-input" value={unit} onChange={e => setUnit(e.target.value)}>
                 {UNITS.map(u => <option key={u} value={u}>{u}</option>)}
               </select>
             </div>
@@ -103,26 +76,19 @@ function AddItemSheet({ initialStorage, onAdd, onClose }: AddItemSheetProps) {
             <label>Lagerort</label>
             <div style={{ display: 'flex', gap: 8 }}>
               {(['freezer', 'fridge'] as StorageType[]).map(s => (
-                <button
-                  key={s}
-                  onClick={() => setStorage(s)}
-                  style={{
-                    flex: 1,
-                    padding: '10px 12px',
-                    border: `2px solid ${storage === s ? (s === 'freezer' ? 'var(--color-freezer)' : 'var(--color-fridge)') : 'transparent'}`,
-                    borderRadius: 10,
-                    background: storage === s
-                      ? (s === 'freezer' ? 'var(--color-freezer-light)' : 'var(--color-fridge-light)')
-                      : 'var(--color-surface-2)',
-                    color: storage === s
-                      ? (s === 'freezer' ? 'var(--color-freezer)' : 'var(--color-fridge)')
-                      : 'var(--color-text-secondary)',
-                    cursor: 'pointer',
-                    fontWeight: 600,
-                    fontSize: 14,
-                    fontFamily: 'var(--font)',
-                  }}
-                >
+                <button key={s} onClick={() => setStorage(s)} style={{
+                  flex: 1, padding: '11px 12px',
+                  border: `2px solid ${storage === s ? (s === 'freezer' ? 'var(--color-freezer)' : 'var(--color-fridge)') : 'transparent'}`,
+                  borderRadius: 12,
+                  background: storage === s
+                    ? (s === 'freezer' ? 'var(--color-freezer-bg)' : 'var(--color-fridge-bg)')
+                    : 'var(--color-surface-2)',
+                  color: storage === s
+                    ? (s === 'freezer' ? 'var(--color-freezer)' : 'var(--color-fridge)')
+                    : 'var(--color-text-secondary)',
+                  cursor: 'pointer', fontWeight: 700, fontSize: 14, fontFamily: 'var(--font)',
+                  transition: 'all 0.15s',
+                }}>
                   {s === 'freezer' ? '❄️ Tiefkühler' : '🌡️ Kühlschrank'}
                 </button>
               ))}
@@ -130,12 +96,8 @@ function AddItemSheet({ initialStorage, onAdd, onClose }: AddItemSheetProps) {
           </div>
           <div className="form-group">
             <label>Ablaufdatum (optional)</label>
-            <input
-              className="form-input"
-              type="date"
-              value={expiresAt}
-              onChange={e => setExpiresAt(e.target.value)}
-            />
+            <input className="form-input" type="date" value={expiresAt}
+              onChange={e => setExpiresAt(e.target.value)} />
           </div>
         </div>
         <div className="sheet-actions">
@@ -166,21 +128,15 @@ function ItemRow({ item, onDelete }: { item: InventoryItem; onDelete: () => void
   let badge: React.ReactNode = null
   if (item.expiresAt) {
     const days = daysUntil(item.expiresAt)
-    if (days < 0) {
-      badge = <span className="item-badge">Abgelaufen</span>
-    } else if (days <= 3) {
-      badge = <span className="item-badge warning">Noch {days}d</span>
-    }
+    if (days < 0) badge = <span className="item-badge">Abgelaufen</span>
+    else if (days <= 3) badge = <span className="item-badge warning">Noch {days}d</span>
   }
 
   return (
-    <div
-      className={`inventory-item${revealed ? ' reveal' : ''}`}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      onClick={() => revealed && setRevealed(false)}
-    >
-      <div className="item-icon">{item.emoji}</div>
+    <div className={`inventory-item${revealed ? ' reveal' : ''}`}
+      onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}
+      onClick={() => revealed && setRevealed(false)}>
+      <div className="item-emoji-wrap">{item.emoji}</div>
       <div className="item-info">
         <div className="item-name">{item.name}</div>
         <div className="item-meta">
@@ -199,11 +155,10 @@ function ItemRow({ item, onDelete }: { item: InventoryItem; onDelete: () => void
 export default function Inventory() {
   const { data, setData, status, hasConfig } = useGitHubFile<InventoryData>('data/inventory.json', [])
   const [showSheet, setShowSheet] = useState(false)
-  const [defaultStorage, setDefaultStorage] = useState<StorageType>('freezer')
+  const [defaultStorage] = useState<StorageType>('freezer')
 
   function addItem(item: Omit<InventoryItem, 'id'>) {
-    const newItem: InventoryItem = { ...item, id: crypto.randomUUID() }
-    setData(prev => [...prev, newItem])
+    setData(prev => [...prev, { ...item, id: crypto.randomUUID() }])
   }
 
   function deleteItem(id: string) {
@@ -218,9 +173,7 @@ export default function Inventory() {
       {status === 'saving' && <div className="sync-bar" />}
       <div className="page-header">
         <h1>Vorräte</h1>
-        {!hasConfig && (
-          <p className="subtitle">Bitte zuerst GitHub in den Einstellungen konfigurieren</p>
-        )}
+        {!hasConfig && <p className="subtitle">GitHub in den Einstellungen konfigurieren</p>}
       </div>
 
       <div className="scroll-content">
@@ -229,20 +182,13 @@ export default function Inventory() {
             <div className="section-dot freezer" />
             Tiefkühler
           </div>
-          <span style={{ fontSize: 13, color: 'var(--color-text-tertiary)' }}>
-            {freezerItems.length} Artikel
-          </span>
+          <span className="section-count">{freezerItems.length}</span>
         </div>
-        <div className="card">
-          {freezerItems.length === 0 ? (
-            <div className="card-row" style={{ cursor: 'default', color: 'var(--color-text-tertiary)', fontSize: 14 }}>
-              Keine Artikel
-            </div>
-          ) : (
-            freezerItems.map(item => (
-              <ItemRow key={item.id} item={item} onDelete={() => deleteItem(item.id)} />
-            ))
-          )}
+        <div className="inventory-card">
+          {freezerItems.length === 0
+            ? <div className="empty-row">❄️ Keine Artikel im Tiefkühler</div>
+            : freezerItems.map(item => <ItemRow key={item.id} item={item} onDelete={() => deleteItem(item.id)} />)
+          }
         </div>
 
         <div className="section-header">
@@ -250,36 +196,22 @@ export default function Inventory() {
             <div className="section-dot fridge" />
             Kühlschrank
           </div>
-          <span style={{ fontSize: 13, color: 'var(--color-text-tertiary)' }}>
-            {fridgeItems.length} Artikel
-          </span>
+          <span className="section-count">{fridgeItems.length}</span>
         </div>
-        <div className="card">
-          {fridgeItems.length === 0 ? (
-            <div className="card-row" style={{ cursor: 'default', color: 'var(--color-text-tertiary)', fontSize: 14 }}>
-              Keine Artikel
-            </div>
-          ) : (
-            fridgeItems.map(item => (
-              <ItemRow key={item.id} item={item} onDelete={() => deleteItem(item.id)} />
-            ))
-          )}
+        <div className="inventory-card">
+          {fridgeItems.length === 0
+            ? <div className="empty-row">🌡️ Keine Artikel im Kühlschrank</div>
+            : fridgeItems.map(item => <ItemRow key={item.id} item={item} onDelete={() => deleteItem(item.id)} />)
+          }
         </div>
       </div>
 
-      <button
-        className="fab"
-        onClick={() => { setDefaultStorage('freezer'); setShowSheet(true) }}
-      >
+      <button className="fab" onClick={() => setShowSheet(true)}>
         <PlusIcon />
       </button>
 
       {showSheet && (
-        <AddItemSheet
-          initialStorage={defaultStorage}
-          onAdd={addItem}
-          onClose={() => setShowSheet(false)}
-        />
+        <AddItemSheet initialStorage={defaultStorage} onAdd={addItem} onClose={() => setShowSheet(false)} />
       )}
     </>
   )

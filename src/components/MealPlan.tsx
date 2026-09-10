@@ -7,6 +7,13 @@ const MEAL_LABELS: Record<MealType, string> = {
   lunch: 'Mittagessen',
   dinner: 'Abendessen',
 }
+
+const MEAL_ICONS: Record<MealType, string> = {
+  breakfast: '☀️',
+  lunch: '🌤️',
+  dinner: '🌙',
+}
+
 const DAY_FULL = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag']
 
 function isoDate(d: Date): string {
@@ -50,7 +57,9 @@ function EditSheet({ mealType, current, onSave, onClose, onDelete }: EditSheetPr
     <div className="sheet-overlay" onClick={onClose}>
       <div className="sheet" onClick={e => e.stopPropagation()}>
         <div className="sheet-handle" />
-        <div className="sheet-title">{MEAL_LABELS[mealType]}</div>
+        <div className="sheet-title">
+          {MEAL_ICONS[mealType]} {MEAL_LABELS[mealType]}
+        </div>
         <div className="sheet-body">
           <div className="form-group">
             <label>Was gibt es?</label>
@@ -84,12 +93,8 @@ export default function MealPlan() {
   const weekDates = getWeekDates(weekOffset)
   const todayIso = isoDate(new Date())
 
-  function getDayPlan(date: string): DayPlan | undefined {
-    return data.find(d => d.date === date)
-  }
-
   function getMeal(date: string, mealType: MealType): string {
-    return getDayPlan(date)?.meals.find(m => m.type === mealType)?.name ?? ''
+    return data.find(d => d.date === date)?.meals.find(m => m.type === mealType)?.name ?? ''
   }
 
   function updateMeal(date: string, mealType: MealType, name: string) {
@@ -101,7 +106,7 @@ export default function MealPlan() {
         days.push({ date, meals: [{ type: mealType, name }] })
         return days
       }
-      const day = { ...days[idx], meals: [...days[idx].meals] }
+      const day: DayPlan = { ...days[idx], meals: [...days[idx].meals] }
       const mIdx = day.meals.findIndex(m => m.type === mealType)
       if (!name) {
         day.meals = day.meals.filter(m => m.type !== mealType)
@@ -115,27 +120,21 @@ export default function MealPlan() {
     })
   }
 
-  const editingMeal = editing
-    ? getMeal(editing.date, editing.mealType)
-    : ''
-
   function weekLabel() {
     if (weekOffset === 0) return 'Diese Woche'
     if (weekOffset === 1) return 'Nächste Woche'
     if (weekOffset === -1) return 'Letzte Woche'
-    const from = formatDate(weekDates[0])
-    const to = formatDate(weekDates[6])
-    return `${from} – ${to}`
+    return `${formatDate(weekDates[0])} – ${formatDate(weekDates[6])}`
   }
+
+  const editingMeal = editing ? getMeal(editing.date, editing.mealType) : ''
 
   return (
     <>
       {status === 'saving' && <div className="sync-bar" />}
       <div className="page-header">
         <h1>Wochenplan</h1>
-        {!hasConfig && (
-          <p className="subtitle">Bitte zuerst GitHub in den Einstellungen konfigurieren</p>
-        )}
+        {!hasConfig && <p className="subtitle">GitHub in den Einstellungen konfigurieren</p>}
       </div>
 
       <div className="week-nav">
@@ -166,10 +165,15 @@ export default function MealPlan() {
                     className="meal-row"
                     onClick={() => setEditing({ date: iso, mealType })}
                   >
-                    <span className={`meal-chip ${mealType}`}>{MEAL_LABELS[mealType]}</span>
-                    <span className={`meal-text${meal ? '' : ' empty'}`}>
-                      {meal || 'Tippen zum Eintragen'}
-                    </span>
+                    <div className={`meal-icon-wrap ${mealType}`}>
+                      {MEAL_ICONS[mealType]}
+                    </div>
+                    <div className="meal-info">
+                      <div className={`meal-type-label ${mealType}`}>{MEAL_LABELS[mealType]}</div>
+                      <div className={`meal-text${meal ? '' : ' empty'}`}>
+                        {meal || 'Tippen zum Eintragen'}
+                      </div>
+                    </div>
                     <ChevronRight className="meal-chevron" />
                   </div>
                 )
@@ -194,7 +198,7 @@ export default function MealPlan() {
 
 function ChevronLeft({ className }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+    <svg className={className} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5">
       <path d="M15 18l-6-6 6-6" />
     </svg>
   )
@@ -202,7 +206,7 @@ function ChevronLeft({ className }: { className?: string }) {
 
 function ChevronRight({ className }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+    <svg className={className} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5">
       <path d="M9 18l6-6-6-6" />
     </svg>
   )
