@@ -725,6 +725,13 @@ body {
   border-bottom: 1px solid rgba(16, 185, 129, 0.15);
 }
 
+.recipe-badge {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  margin-top: 3px;
+  opacity: 0.75;
+}
+
 .meal-filled-dot {
   width: 8px;
   height: 8px;

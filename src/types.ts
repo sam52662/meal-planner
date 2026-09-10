@@ -3,6 +3,7 @@ export type MealType = 'breakfast' | 'lunch' | 'dinner'
 export interface Meal {
   type: MealType
   name: string
+  recipe?: string
   note?: string
 }
 

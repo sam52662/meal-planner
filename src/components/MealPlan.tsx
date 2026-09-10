@@ -3,7 +3,7 @@ import type React from 'react'
 import { useGitHubFile } from '../hooks/useGitHub'
 import { loadGeminiKey } from '../hooks/useGitHub'
 import { suggestMeal } from '../api/gemini'
-import type { MealPlanData, MealType, DayPlan, InventoryData } from '../types'
+import type { MealPlanData, MealType, DayPlan, InventoryData, Meal } from '../types'
 
 const MEAL_LABELS: Record<MealType, string> = {
   breakfast: 'Frühstück',
@@ -43,17 +43,18 @@ function formatDate(d: Date): string {
 
 interface EditSheetProps {
   mealType: MealType
-  current: string
-  onSave: (value: string) => void
+  current: Meal | null
+  onSave: (name: string, recipe: string) => void
   onClose: () => void
   onDelete: () => void
 }
 
 function EditSheet({ mealType, current, onSave, onClose, onDelete }: EditSheetProps) {
-  const [value, setValue] = useState(current)
+  const [name, setName] = useState(current?.name ?? '')
+  const [recipe, setRecipe] = useState(current?.recipe ?? '')
 
   function handleSave() {
-    onSave(value.trim())
+    onSave(name.trim(), recipe.trim())
     onClose()
   }
 
@@ -69,15 +70,26 @@ function EditSheet({ mealType, current, onSave, onClose, onDelete }: EditSheetPr
               className="form-input"
               autoFocus
               placeholder="z.B. Spaghetti Bolognese"
-              value={value}
-              onChange={e => setValue(e.target.value)}
+              value={name}
+              onChange={e => setName(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSave()}
+            />
+          </div>
+          <div className="form-group" style={{ marginTop: 12 }}>
+            <label>Rezept <span style={{ fontWeight: 400, opacity: 0.6 }}>(optional)</span></label>
+            <textarea
+              className="form-input"
+              placeholder="Zutaten und Zubereitung …"
+              value={recipe}
+              onChange={e => setRecipe(e.target.value)}
+              rows={5}
+              style={{ resize: 'vertical', minHeight: 100 }}
             />
           </div>
         </div>
         <div className="sheet-actions">
           <button className="btn btn-secondary" onClick={onClose}>Abbrechen</button>
-          {current && (
+          {current?.name && (
             <button className="btn btn-danger" onClick={() => { onDelete(); onClose() }}>Löschen</button>
           )}
           <button className="btn btn-primary" onClick={handleSave}>Speichern</button>
@@ -92,30 +104,33 @@ export default function MealPlan() {
   const { data: inventory } = useGitHubFile<InventoryData>('data/inventory.json', [])
   const [weekOffset, setWeekOffset] = useState(0)
   const [editing, setEditing] = useState<{ date: string; mealType: MealType } | null>(null)
-  const [suggesting, setSuggesting] = useState<string | null>(null) // "date-mealType"
+  const [suggesting, setSuggesting] = useState<string | null>(null)
   const [suggestionError, setSuggestionError] = useState<string | null>(null)
+  const [pendingSuggestion, setPendingSuggestion] = useState<{
+    date: string; mealType: MealType; name: string; recipe: string
+  } | null>(null)
 
   const weekDates = getWeekDates(weekOffset)
   const todayIso = isoDate(new Date())
 
-  function getMeal(date: string, mealType: MealType): string {
-    return data.find(d => d.date === date)?.meals.find(m => m.type === mealType)?.name ?? ''
+  function getMealObj(date: string, mealType: MealType): Meal | null {
+    return data.find(d => d.date === date)?.meals.find(m => m.type === mealType) ?? null
   }
 
   function countFilledMeals(): number {
     return weekDates.reduce((acc, date) => {
       const iso = isoDate(date)
-      return acc + (['breakfast', 'lunch', 'dinner'] as MealType[]).filter(t => getMeal(iso, t)).length
+      return acc + (['breakfast', 'lunch', 'dinner'] as MealType[]).filter(t => getMealObj(iso, t)?.name).length
     }, 0)
   }
 
-  function updateMeal(date: string, mealType: MealType, name: string) {
+  function updateMeal(date: string, mealType: MealType, name: string, recipe = '') {
     setData(prev => {
       const days = [...prev]
       const idx = days.findIndex(d => d.date === date)
       if (idx === -1) {
         if (!name) return days
-        days.push({ date, meals: [{ type: mealType, name }] })
+        days.push({ date, meals: [{ type: mealType, name, recipe: recipe || undefined }] })
         return days
       }
       const day: DayPlan = { ...days[idx], meals: [...days[idx].meals] }
@@ -123,9 +138,9 @@ export default function MealPlan() {
       if (!name) {
         day.meals = day.meals.filter(m => m.type !== mealType)
       } else if (mIdx === -1) {
-        day.meals.push({ type: mealType, name })
+        day.meals.push({ type: mealType, name, recipe: recipe || undefined })
       } else {
-        day.meals[mIdx] = { ...day.meals[mIdx], name }
+        day.meals[mIdx] = { ...day.meals[mIdx], name, recipe: recipe || undefined }
       }
       days[idx] = day
       return days
@@ -141,11 +156,6 @@ export default function MealPlan() {
 
   const filled = countFilledMeals()
   const total = 21
-  const editingMeal = editing ? getMeal(editing.date, editing.mealType) : ''
-
-  const [pendingSuggestion, setPendingSuggestion] = useState<{
-    date: string; mealType: MealType; suggestion: string
-  } | null>(null)
 
   async function handleSuggest(date: string, mealType: MealType, e: React.MouseEvent) {
     e.stopPropagation()
@@ -161,7 +171,7 @@ export default function MealPlan() {
     try {
       const allMeals = data.flatMap(d => d.meals.map(m => m.name))
       const suggestion = await suggestMeal(geminiKey, mealType, inventory, allMeals)
-      setPendingSuggestion({ date, mealType, suggestion })
+      setPendingSuggestion({ date, mealType, name: suggestion.name, recipe: suggestion.recipe })
     } catch (err) {
       setSuggestionError(err instanceof Error ? err.message : 'KI-Fehler')
       setTimeout(() => setSuggestionError(null), 4000)
@@ -169,6 +179,8 @@ export default function MealPlan() {
       setSuggesting(null)
     }
   }
+
+  const editingMealObj = editing ? getMealObj(editing.date, editing.mealType) : null
 
   return (
     <>
@@ -184,13 +196,10 @@ export default function MealPlan() {
         {!hasConfig && <p className="subtitle" style={{ marginTop: 4, color: 'rgba(255,255,255,0.5)' }}>GitHub in den Einstellungen konfigurieren</p>}
       </div>
 
-      {/* Week navigation as floating pill */}
       <div className="week-nav">
         <button className="week-nav-btn" onClick={() => setWeekOffset(o => o - 1)}>
           <ChevronLeft />
         </button>
-
-        {/* Day strip for current week */}
         <div className="day-strip">
           {weekDates.map(date => {
             const iso = isoDate(date)
@@ -203,7 +212,6 @@ export default function MealPlan() {
             )
           })}
         </div>
-
         <button className="week-nav-btn" onClick={() => setWeekOffset(o => o + 1)}>
           <ChevronRight />
         </button>
@@ -237,7 +245,9 @@ export default function MealPlan() {
                 <span className="day-date">{formatDate(date)}</span>
               </div>
               {(['breakfast', 'lunch', 'dinner'] as MealType[]).map(mealType => {
-                const meal = getMeal(iso, mealType)
+                const mealObj = getMealObj(iso, mealType)
+                const meal = mealObj?.name ?? ''
+                const hasRecipe = !!mealObj?.recipe
                 return (
                   <div key={mealType} className="meal-row" onClick={() => setEditing({ date: iso, mealType })}>
                     <div className={`meal-icon-wrap ${mealType}`}>{MEAL_ICONS[mealType]}</div>
@@ -246,6 +256,9 @@ export default function MealPlan() {
                       <div className={`meal-text${meal ? '' : ' empty'}`}>
                         {suggesting === `${iso}-${mealType}` ? 'KI denkt nach …' : meal || 'Tippen zum Eintragen …'}
                       </div>
+                      {hasRecipe && (
+                        <div className="recipe-badge">📋 Rezept</div>
+                      )}
                     </div>
                     <button
                       className={`suggest-btn${suggesting === `${iso}-${mealType}` ? ' loading' : ''}`}
@@ -268,8 +281,8 @@ export default function MealPlan() {
       {editing && (
         <EditSheet
           mealType={editing.mealType}
-          current={editingMeal}
-          onSave={val => updateMeal(editing.date, editing.mealType, val)}
+          current={editingMealObj}
+          onSave={(name, recipe) => updateMeal(editing.date, editing.mealType, name, recipe)}
           onDelete={() => updateMeal(editing.date, editing.mealType, '')}
           onClose={() => setEditing(null)}
         />
@@ -281,19 +294,33 @@ export default function MealPlan() {
             <div className="sheet-handle" />
             <div className="sheet-title">✨ KI-Vorschlag</div>
             <div className="sheet-body">
-              <div style={{ textAlign: 'center', padding: '16px 0' }}>
+              <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
                 <div style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginBottom: 8 }}>
                   {MEAL_LABELS[pendingSuggestion.mealType]}
                 </div>
-                <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--color-text-primary)' }}>
-                  {pendingSuggestion.suggestion}
+                <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: pendingSuggestion.recipe ? 16 : 0 }}>
+                  {pendingSuggestion.name}
                 </div>
+                {pendingSuggestion.recipe && (
+                  <div style={{
+                    textAlign: 'left',
+                    fontSize: 14,
+                    lineHeight: 1.6,
+                    color: 'var(--color-text-secondary)',
+                    background: 'var(--color-card)',
+                    borderRadius: 12,
+                    padding: '12px 14px',
+                    marginTop: 4,
+                  }}>
+                    {pendingSuggestion.recipe}
+                  </div>
+                )}
               </div>
             </div>
             <div className="sheet-actions">
               <button className="btn btn-secondary" onClick={() => setPendingSuggestion(null)}>Ablehnen</button>
               <button className="btn btn-primary" onClick={() => {
-                updateMeal(pendingSuggestion.date, pendingSuggestion.mealType, pendingSuggestion.suggestion)
+                updateMeal(pendingSuggestion.date, pendingSuggestion.mealType, pendingSuggestion.name, pendingSuggestion.recipe)
                 setPendingSuggestion(null)
               }}>Übernehmen</button>
             </div>
