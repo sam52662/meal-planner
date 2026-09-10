@@ -30,7 +30,7 @@
   --color-tab-bar: rgba(255, 255, 255, 0.88);
   --gradient-header: linear-gradient(135deg, #5b6af0 0%, #8b5cf6 100%);
   --gradient-today: linear-gradient(135deg, #5b6af0 0%, #8b5cf6 100%);
-  --tab-bar-height: 83px;
+  --tab-bar-height: 62px;
   --radius-sm: 12px;
   --radius-md: 16px;
   --radius-lg: 22px;
@@ -236,7 +236,7 @@ body {
   border-top: 1px solid var(--color-border);
   display: flex;
   align-items: flex-start;
-  padding-top: 10px;
+  padding-top: 8px;
   z-index: 100;
   /* Extend background behind safe area on iOS */
   box-shadow: 0 calc(var(--safe-bottom) * -1) 0 0 var(--color-tab-bar);
