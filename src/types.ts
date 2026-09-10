@@ -22,6 +22,7 @@ export interface InventoryItem {
   quantity: number
   unit: string
   storage: StorageType
+  storedAt?: string  // ISO date string
   expiresAt?: string // ISO date string
 }
 

@@ -24,11 +24,12 @@ function AddItemSheet({ initialStorage, onAdd, onClose }: AddItemSheetProps) {
   const [quantity, setQuantity] = useState('1')
   const [unit, setUnit] = useState('Stück')
   const [storage, setStorage] = useState<StorageType>(initialStorage)
+  const [storedAt, setStoredAt] = useState(new Date().toISOString().split('T')[0])
   const [expiresAt, setExpiresAt] = useState('')
 
   function handleAdd() {
     if (!name.trim()) return
-    onAdd({ name: name.trim(), emoji, quantity: parseFloat(quantity) || 1, unit, storage, expiresAt: expiresAt || undefined })
+    onAdd({ name: name.trim(), emoji, quantity: parseFloat(quantity) || 1, unit, storage, storedAt: storedAt || undefined, expiresAt: expiresAt || undefined })
     onClose()
   }
 
@@ -95,6 +96,11 @@ function AddItemSheet({ initialStorage, onAdd, onClose }: AddItemSheetProps) {
             </div>
           </div>
           <div className="form-group">
+            <label>Eingelagert am</label>
+            <input className="form-input" type="date" value={storedAt}
+              onChange={e => setStoredAt(e.target.value)} />
+          </div>
+          <div className="form-group">
             <label>Ablaufdatum (optional)</label>
             <input className="form-input" type="date" value={expiresAt}
               onChange={e => setExpiresAt(e.target.value)} />
@@ -141,6 +147,7 @@ function ItemRow({ item, onDelete }: { item: InventoryItem; onDelete: () => void
         <div className="item-name">{item.name}</div>
         <div className="item-meta">
           {item.quantity} {item.unit}
+          {item.storedAt && ` · Eingelagert ${new Date(item.storedAt).toLocaleDateString('de-DE')}`}
           {item.expiresAt && ` · MHD ${new Date(item.expiresAt).toLocaleDateString('de-DE')}`}
         </div>
       </div>
