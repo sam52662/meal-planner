@@ -683,6 +683,60 @@ body {
   flex-shrink: 0;
 }
 
+.suggest-btn {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(91, 106, 240, 0.1);
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  margin-right: 6px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.suggest-btn:hover:not(:disabled) {
+  background: rgba(91, 106, 240, 0.2);
+}
+
+.suggest-btn:active:not(:disabled) {
+  transform: scale(0.9);
+}
+
+.suggest-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.suggest-btn.loading {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.suggestion-error {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  margin: 0 16px 8px;
+  padding: 10px 16px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: var(--radius-sm);
+  color: #ef4444;
+  font-size: 13px;
+  text-align: center;
+  backdrop-filter: blur(8px);
+}
+
 /* ============================================================
    Section headers (legacy)
    ============================================================ */

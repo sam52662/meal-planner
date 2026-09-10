@@ -2,7 +2,16 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { getFile, putFile, type GitHubConfig } from '../api/github'
 
 const CONFIG_KEY = 'gh_config'
+const GEMINI_KEY = 'gemini_api_key'
 const CACHE_PREFIX = 'gh_cache_'
+
+export function loadGeminiKey(): string {
+  return localStorage.getItem(GEMINI_KEY) ?? ''
+}
+
+export function saveGeminiKey(key: string): void {
+  localStorage.setItem(GEMINI_KEY, key)
+}
 
 export function loadConfig(): GitHubConfig | null {
   try {

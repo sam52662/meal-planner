@@ -1,6 +1,9 @@
 import { useState } from 'react'
+import type React from 'react'
 import { useGitHubFile } from '../hooks/useGitHub'
-import type { MealPlanData, MealType, DayPlan } from '../types'
+import { loadGeminiKey } from '../hooks/useGitHub'
+import { suggestMeal } from '../api/gemini'
+import type { MealPlanData, MealType, DayPlan, InventoryData } from '../types'
 
 const MEAL_LABELS: Record<MealType, string> = {
   breakfast: 'Frühstück',
@@ -86,8 +89,11 @@ function EditSheet({ mealType, current, onSave, onClose, onDelete }: EditSheetPr
 
 export default function MealPlan() {
   const { data, setData, status, hasConfig } = useGitHubFile<MealPlanData>('data/meals.json', [])
+  const { data: inventory } = useGitHubFile<InventoryData>('data/inventory.json', [])
   const [weekOffset, setWeekOffset] = useState(0)
   const [editing, setEditing] = useState<{ date: string; mealType: MealType } | null>(null)
+  const [suggesting, setSuggesting] = useState<string | null>(null) // "date-mealType"
+  const [suggestionError, setSuggestionError] = useState<string | null>(null)
 
   const weekDates = getWeekDates(weekOffset)
   const todayIso = isoDate(new Date())
@@ -137,6 +143,29 @@ export default function MealPlan() {
   const total = 21
   const editingMeal = editing ? getMeal(editing.date, editing.mealType) : ''
 
+  async function handleSuggest(date: string, mealType: MealType, e: React.MouseEvent) {
+    e.stopPropagation()
+    const key = `${date}-${mealType}`
+    const geminiKey = loadGeminiKey()
+    if (!geminiKey) {
+      setSuggestionError('Bitte zuerst den Gemini API-Key in den Einstellungen eintragen.')
+      setTimeout(() => setSuggestionError(null), 3000)
+      return
+    }
+    setSuggesting(key)
+    setSuggestionError(null)
+    try {
+      const allMeals = data.flatMap(d => d.meals.map(m => m.name))
+      const suggestion = await suggestMeal(geminiKey, mealType, inventory, allMeals)
+      updateMeal(date, mealType, suggestion)
+    } catch (err) {
+      setSuggestionError(err instanceof Error ? err.message : 'KI-Fehler')
+      setTimeout(() => setSuggestionError(null), 4000)
+    } finally {
+      setSuggesting(null)
+    }
+  }
+
   return (
     <>
       {status === 'saving' && <div className="sync-bar" />}
@@ -176,6 +205,10 @@ export default function MealPlan() {
         </button>
       </div>
 
+      {suggestionError && (
+        <div className="suggestion-error">{suggestionError}</div>
+      )}
+
       <div className="scroll-content">
         {weekOffset === 0 && (
           <div className="week-progress">
@@ -207,9 +240,15 @@ export default function MealPlan() {
                     <div className="meal-info">
                       <div className={`meal-type-label ${mealType}`}>{MEAL_LABELS[mealType]}</div>
                       <div className={`meal-text${meal ? '' : ' empty'}`}>
-                        {meal || 'Tippen zum Eintragen …'}
+                        {suggesting === `${iso}-${mealType}` ? 'KI denkt nach …' : meal || 'Tippen zum Eintragen …'}
                       </div>
                     </div>
+                    <button
+                      className={`suggest-btn${suggesting === `${iso}-${mealType}` ? ' loading' : ''}`}
+                      onClick={e => handleSuggest(iso, mealType, e)}
+                      disabled={suggesting !== null}
+                      title="KI-Vorschlag"
+                    >✨</button>
                     {meal
                       ? <span className="meal-filled-dot" />
                       : <ChevronRight className="meal-chevron" />
