@@ -14,6 +14,7 @@ const MEAL_ICONS: Record<MealType, string> = {
   dinner: '🌙',
 }
 
+const DAY_SHORT = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa']
 const DAY_FULL = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag']
 
 function isoDate(d: Date): string {
@@ -57,9 +58,7 @@ function EditSheet({ mealType, current, onSave, onClose, onDelete }: EditSheetPr
     <div className="sheet-overlay" onClick={onClose}>
       <div className="sheet" onClick={e => e.stopPropagation()}>
         <div className="sheet-handle" />
-        <div className="sheet-title">
-          {MEAL_ICONS[mealType]} {MEAL_LABELS[mealType]}
-        </div>
+        <div className="sheet-title">{MEAL_ICONS[mealType]} {MEAL_LABELS[mealType]}</div>
         <div className="sheet-body">
           <div className="form-group">
             <label>Was gibt es?</label>
@@ -97,6 +96,13 @@ export default function MealPlan() {
     return data.find(d => d.date === date)?.meals.find(m => m.type === mealType)?.name ?? ''
   }
 
+  function countFilledMeals(): number {
+    return weekDates.reduce((acc, date) => {
+      const iso = isoDate(date)
+      return acc + (['breakfast', 'lunch', 'dinner'] as MealType[]).filter(t => getMeal(iso, t)).length
+    }, 0)
+  }
+
   function updateMeal(date: string, mealType: MealType, name: string) {
     setData(prev => {
       const days = [...prev]
@@ -127,54 +133,87 @@ export default function MealPlan() {
     return `${formatDate(weekDates[0])} – ${formatDate(weekDates[6])}`
   }
 
+  const filled = countFilledMeals()
+  const total = 21
   const editingMeal = editing ? getMeal(editing.date, editing.mealType) : ''
 
   return (
     <>
       {status === 'saving' && <div className="sync-bar" />}
+
       <div className="page-header">
         <h1>Wochenplan</h1>
-        {!hasConfig && <p className="subtitle">GitHub in den Einstellungen konfigurieren</p>}
+        <p className="subtitle">
+          {weekOffset === 0
+            ? `${filled} von ${total} Mahlzeiten geplant`
+            : weekLabel()}
+        </p>
+        {!hasConfig && <p className="subtitle" style={{ marginTop: 4, color: 'rgba(255,255,255,0.5)' }}>GitHub in den Einstellungen konfigurieren</p>}
       </div>
 
+      {/* Week navigation as floating pill */}
       <div className="week-nav">
-        <button onClick={() => setWeekOffset(o => o - 1)}>
+        <button className="week-nav-btn" onClick={() => setWeekOffset(o => o - 1)}>
           <ChevronLeft />
         </button>
-        <span className="week-label">{weekLabel()}</span>
-        <button onClick={() => setWeekOffset(o => o + 1)}>
+
+        {/* Day strip for current week */}
+        <div className="day-strip">
+          {weekDates.map(date => {
+            const iso = isoDate(date)
+            const isToday = iso === todayIso
+            return (
+              <div key={iso} className={`day-strip-item${isToday ? ' today' : ''}`}>
+                <span className="day-strip-label">{DAY_SHORT[date.getDay()]}</span>
+                <span className="day-strip-num">{date.getDate()}</span>
+              </div>
+            )
+          })}
+        </div>
+
+        <button className="week-nav-btn" onClick={() => setWeekOffset(o => o + 1)}>
           <ChevronRight />
         </button>
       </div>
 
       <div className="scroll-content">
+        {weekOffset === 0 && (
+          <div className="week-progress">
+            <div className="week-progress-bar">
+              <div className="week-progress-fill" style={{ width: `${(filled / total) * 100}%` }} />
+            </div>
+            <span className="week-progress-label">{Math.round((filled / total) * 100)}% geplant</span>
+          </div>
+        )}
+
         {weekDates.map(date => {
           const iso = isoDate(date)
           const isToday = iso === todayIso
+          const isPast = iso < todayIso
           return (
-            <div key={iso} className={`day-card${isToday ? ' today' : ''}`}>
+            <div key={iso} className={`day-card${isToday ? ' today' : ''}${isPast && !isToday ? ' past' : ''}`}>
               <div className="day-header">
-                <span className="day-name">{DAY_FULL[date.getDay()]}</span>
+                <div className="day-header-left">
+                  {isToday && <span className="today-badge">Heute</span>}
+                  <span className="day-name">{DAY_FULL[date.getDay()]}</span>
+                </div>
                 <span className="day-date">{formatDate(date)}</span>
               </div>
               {(['breakfast', 'lunch', 'dinner'] as MealType[]).map(mealType => {
                 const meal = getMeal(iso, mealType)
                 return (
-                  <div
-                    key={mealType}
-                    className="meal-row"
-                    onClick={() => setEditing({ date: iso, mealType })}
-                  >
-                    <div className={`meal-icon-wrap ${mealType}`}>
-                      {MEAL_ICONS[mealType]}
-                    </div>
+                  <div key={mealType} className="meal-row" onClick={() => setEditing({ date: iso, mealType })}>
+                    <div className={`meal-icon-wrap ${mealType}`}>{MEAL_ICONS[mealType]}</div>
                     <div className="meal-info">
                       <div className={`meal-type-label ${mealType}`}>{MEAL_LABELS[mealType]}</div>
                       <div className={`meal-text${meal ? '' : ' empty'}`}>
-                        {meal || 'Tippen zum Eintragen'}
+                        {meal || 'Tippen zum Eintragen …'}
                       </div>
                     </div>
-                    <ChevronRight className="meal-chevron" />
+                    {meal
+                      ? <span className="meal-filled-dot" />
+                      : <ChevronRight className="meal-chevron" />
+                    }
                   </div>
                 )
               })}
