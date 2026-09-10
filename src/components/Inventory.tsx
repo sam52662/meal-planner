@@ -12,24 +12,26 @@ function daysUntil(isoDate: string): number {
   return Math.ceil((target.getTime() - now.getTime()) / 86400000)
 }
 
-interface AddItemSheetProps {
-  initialStorage: StorageType
-  onAdd: (item: Omit<InventoryItem, 'id'>) => void
+interface ItemSheetProps {
+  initial?: InventoryItem
+  onSave: (item: Omit<InventoryItem, 'id'>) => void
+  onDelete?: () => void
   onClose: () => void
 }
 
-function AddItemSheet({ initialStorage, onAdd, onClose }: AddItemSheetProps) {
-  const [name, setName] = useState('')
-  const [emoji, setEmoji] = useState('🥩')
-  const [quantity, setQuantity] = useState('1')
-  const [unit, setUnit] = useState('Stück')
-  const [storage, setStorage] = useState<StorageType>(initialStorage)
-  const [storedAt, setStoredAt] = useState(new Date().toISOString().split('T')[0])
-  const [expiresAt, setExpiresAt] = useState('')
+function ItemSheet({ initial, onSave, onDelete, onClose }: ItemSheetProps) {
+  const today = new Date().toISOString().split('T')[0]
+  const [name, setName] = useState(initial?.name ?? '')
+  const [emoji, setEmoji] = useState(initial?.emoji ?? '🥩')
+  const [quantity, setQuantity] = useState(String(initial?.quantity ?? 1))
+  const [unit, setUnit] = useState(initial?.unit ?? 'Stück')
+  const [storage, setStorage] = useState<StorageType>(initial?.storage ?? 'freezer')
+  const [storedAt, setStoredAt] = useState(initial?.storedAt ?? today)
+  const [expiresAt, setExpiresAt] = useState(initial?.expiresAt ?? '')
 
-  function handleAdd() {
+  function handleSave() {
     if (!name.trim()) return
-    onAdd({ name: name.trim(), emoji, quantity: parseFloat(quantity) || 1, unit, storage, storedAt: storedAt || undefined, expiresAt: expiresAt || undefined })
+    onSave({ name: name.trim(), emoji, quantity: parseFloat(quantity) || 1, unit, storage, storedAt: storedAt || undefined, expiresAt: expiresAt || undefined })
     onClose()
   }
 
@@ -37,7 +39,7 @@ function AddItemSheet({ initialStorage, onAdd, onClose }: AddItemSheetProps) {
     <div className="sheet-overlay" onClick={onClose}>
       <div className="sheet" onClick={e => e.stopPropagation()}>
         <div className="sheet-handle" />
-        <div className="sheet-title">Artikel hinzufügen</div>
+        <div className="sheet-title">{initial ? 'Artikel bearbeiten' : 'Artikel hinzufügen'}</div>
         <div className="sheet-body">
           <div className="form-group">
             <label>Emoji</label>
@@ -49,9 +51,7 @@ function AddItemSheet({ initialStorage, onAdd, onClose }: AddItemSheetProps) {
                   borderRadius: 12,
                   background: emoji === e ? 'var(--color-accent-light)' : 'var(--color-surface-2)',
                   cursor: 'pointer', transition: 'all 0.15s',
-                }}>
-                  {e}
-                </button>
+                }}>{e}</button>
               ))}
             </div>
           </div>
@@ -81,14 +81,9 @@ function AddItemSheet({ initialStorage, onAdd, onClose }: AddItemSheetProps) {
                   flex: 1, padding: '11px 12px',
                   border: `2px solid ${storage === s ? (s === 'freezer' ? 'var(--color-freezer)' : 'var(--color-fridge)') : 'transparent'}`,
                   borderRadius: 12,
-                  background: storage === s
-                    ? (s === 'freezer' ? 'var(--color-freezer-bg)' : 'var(--color-fridge-bg)')
-                    : 'var(--color-surface-2)',
-                  color: storage === s
-                    ? (s === 'freezer' ? 'var(--color-freezer)' : 'var(--color-fridge)')
-                    : 'var(--color-text-secondary)',
-                  cursor: 'pointer', fontWeight: 700, fontSize: 14, fontFamily: 'var(--font)',
-                  transition: 'all 0.15s',
+                  background: storage === s ? (s === 'freezer' ? 'var(--color-freezer-bg)' : 'var(--color-fridge-bg)') : 'var(--color-surface-2)',
+                  color: storage === s ? (s === 'freezer' ? 'var(--color-freezer)' : 'var(--color-fridge)') : 'var(--color-text-secondary)',
+                  cursor: 'pointer', fontWeight: 700, fontSize: 14, fontFamily: 'var(--font)', transition: 'all 0.15s',
                 }}>
                   {s === 'freezer' ? '❄️ Tiefkühler' : '🌡️ Kühlschrank'}
                 </button>
@@ -107,9 +102,12 @@ function AddItemSheet({ initialStorage, onAdd, onClose }: AddItemSheetProps) {
           </div>
         </div>
         <div className="sheet-actions">
+          {onDelete && (
+            <button className="btn btn-danger" onClick={() => { onDelete(); onClose() }}>Löschen</button>
+          )}
           <button className="btn btn-secondary" onClick={onClose}>Abbrechen</button>
-          <button className="btn btn-primary" onClick={handleAdd} disabled={!name.trim()}>
-            Hinzufügen
+          <button className="btn btn-primary" onClick={handleSave} disabled={!name.trim()}>
+            {initial ? 'Speichern' : 'Hinzufügen'}
           </button>
         </div>
       </div>
@@ -117,18 +115,23 @@ function AddItemSheet({ initialStorage, onAdd, onClose }: AddItemSheetProps) {
   )
 }
 
-function ItemRow({ item, onDelete }: { item: InventoryItem; onDelete: () => void }) {
-  const [revealed, setRevealed] = useState(false)
+function ItemRow({ item, onEdit }: { item: InventoryItem; onEdit: () => void }) {
   const touchStart = useRef<number>(0)
+  const touchMoved = useRef(false)
 
   function handleTouchStart(e: React.TouchEvent) {
     touchStart.current = e.touches[0].clientX
+    touchMoved.current = false
   }
 
-  function handleTouchEnd(e: React.TouchEvent) {
-    const dx = touchStart.current - e.changedTouches[0].clientX
-    if (dx > 60) setRevealed(true)
-    if (dx < -30) setRevealed(false)
+  function handleTouchMove(e: React.TouchEvent) {
+    if (Math.abs(e.touches[0].clientX - touchStart.current) > 10) {
+      touchMoved.current = true
+    }
+  }
+
+  function handleTouchEnd() {
+    if (!touchMoved.current) onEdit()
   }
 
   let badge: React.ReactNode = null
@@ -139,9 +142,14 @@ function ItemRow({ item, onDelete }: { item: InventoryItem; onDelete: () => void
   }
 
   return (
-    <div className={`inventory-item${revealed ? ' reveal' : ''}`}
-      onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}
-      onClick={() => revealed && setRevealed(false)}>
+    <div
+      className="inventory-item"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onClick={onEdit}
+      style={{ cursor: 'pointer' }}
+    >
       <div className="item-emoji-wrap">{item.emoji}</div>
       <div className="item-info">
         <div className="item-name">{item.name}</div>
@@ -152,20 +160,22 @@ function ItemRow({ item, onDelete }: { item: InventoryItem; onDelete: () => void
         </div>
       </div>
       {badge}
-      <button className="delete-btn" onClick={e => { e.stopPropagation(); onDelete() }}>
-        Löschen
-      </button>
+      <ChevronRight />
     </div>
   )
 }
 
 export default function Inventory() {
   const { data, setData, status, hasConfig } = useGitHubFile<InventoryData>('data/inventory.json', [])
-  const [showSheet, setShowSheet] = useState(false)
-  const [defaultStorage] = useState<StorageType>('freezer')
+  const [showAdd, setShowAdd] = useState(false)
+  const [editing, setEditing] = useState<InventoryItem | null>(null)
 
   function addItem(item: Omit<InventoryItem, 'id'>) {
     setData(prev => [...prev, { ...item, id: crypto.randomUUID() }])
+  }
+
+  function updateItem(id: string, item: Omit<InventoryItem, 'id'>) {
+    setData(prev => prev.map(i => i.id === id ? { ...item, id } : i))
   }
 
   function deleteItem(id: string) {
@@ -185,40 +195,47 @@ export default function Inventory() {
 
       <div className="scroll-content">
         <div className="section-header">
-          <div className="section-title">
-            <div className="section-dot freezer" />
-            Tiefkühler
-          </div>
+          <div className="section-title"><div className="section-dot freezer" />Tiefkühler</div>
           <span className="section-count">{freezerItems.length}</span>
         </div>
         <div className="inventory-card">
           {freezerItems.length === 0
             ? <div className="empty-row">❄️ Keine Artikel im Tiefkühler</div>
-            : freezerItems.map(item => <ItemRow key={item.id} item={item} onDelete={() => deleteItem(item.id)} />)
+            : freezerItems.map(item => (
+                <ItemRow key={item.id} item={item} onEdit={() => setEditing(item)} />
+              ))
           }
         </div>
 
         <div className="section-header">
-          <div className="section-title">
-            <div className="section-dot fridge" />
-            Kühlschrank
-          </div>
+          <div className="section-title"><div className="section-dot fridge" />Kühlschrank</div>
           <span className="section-count">{fridgeItems.length}</span>
         </div>
         <div className="inventory-card">
           {fridgeItems.length === 0
             ? <div className="empty-row">🌡️ Keine Artikel im Kühlschrank</div>
-            : fridgeItems.map(item => <ItemRow key={item.id} item={item} onDelete={() => deleteItem(item.id)} />)
+            : fridgeItems.map(item => (
+                <ItemRow key={item.id} item={item} onEdit={() => setEditing(item)} />
+              ))
           }
         </div>
       </div>
 
-      <button className="fab" onClick={() => setShowSheet(true)}>
+      <button className="fab" onClick={() => setShowAdd(true)}>
         <PlusIcon />
       </button>
 
-      {showSheet && (
-        <AddItemSheet initialStorage={defaultStorage} onAdd={addItem} onClose={() => setShowSheet(false)} />
+      {showAdd && (
+        <ItemSheet onSave={addItem} onClose={() => setShowAdd(false)} />
+      )}
+
+      {editing && (
+        <ItemSheet
+          initial={editing}
+          onSave={item => updateItem(editing.id, item)}
+          onDelete={() => deleteItem(editing.id)}
+          onClose={() => setEditing(null)}
+        />
       )}
     </>
   )
@@ -228,6 +245,14 @@ function PlusIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
       <path d="M12 5v14M5 12h14" />
+    </svg>
+  )
+}
+
+function ChevronRight() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }}>
+      <path d="M9 18l6-6-6-6" />
     </svg>
   )
 }
