@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type React from 'react'
 import { useGitHubFile } from '../hooks/useGitHub'
 import { loadGeminiKey } from '../hooks/useGitHub'
@@ -39,6 +39,31 @@ function getWeekDates(offsetWeeks: number): Date[] {
 
 function formatDate(d: Date): string {
   return `${d.getDate()}.${d.getMonth() + 1}.`
+}
+
+interface RecipeSheetProps {
+  mealType: MealType
+  meal: Meal
+  onEdit: () => void
+  onClose: () => void
+}
+
+function RecipeSheet({ mealType, meal, onEdit, onClose }: RecipeSheetProps) {
+  return (
+    <div className="sheet-overlay" onClick={onClose}>
+      <div className="sheet" onClick={e => e.stopPropagation()}>
+        <div className="sheet-handle" />
+        <div className="sheet-title">{MEAL_ICONS[mealType]} {meal.name}</div>
+        <div className="sheet-body">
+          <div className="recipe-text">{meal.recipe}</div>
+        </div>
+        <div className="sheet-actions">
+          <button className="btn btn-secondary" onClick={onClose}>Schließen</button>
+          <button className="btn btn-primary" onClick={onEdit}>Bearbeiten</button>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 interface EditSheetProps {
@@ -104,8 +129,16 @@ export default function MealPlan() {
   const { data: inventory } = useGitHubFile<InventoryData>('data/inventory.json', [])
   const [weekOffset, setWeekOffset] = useState(0)
   const [editing, setEditing] = useState<{ date: string; mealType: MealType } | null>(null)
+  const [viewingRecipe, setViewingRecipe] = useState<{ date: string; mealType: MealType } | null>(null)
   const [suggesting, setSuggesting] = useState<string | null>(null)
   const [suggestionError, setSuggestionError] = useState<string | null>(null)
+  const todayRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (weekOffset === 0) {
+      setTimeout(() => todayRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
+    }
+  }, [weekOffset])
   const [pendingSuggestion, setPendingSuggestion] = useState<{
     date: string; mealType: MealType; name: string; recipe: string
   } | null>(null)
@@ -236,7 +269,7 @@ export default function MealPlan() {
           const isToday = iso === todayIso
           const isPast = iso < todayIso
           return (
-            <div key={iso} className={`day-card${isToday ? ' today' : ''}${isPast && !isToday ? ' past' : ''}`}>
+            <div key={iso} ref={isToday ? todayRef : undefined} className={`day-card${isToday ? ' today' : ''}${isPast && !isToday ? ' past' : ''}`}>
               <div className="day-header">
                 <div className="day-header-left">
                   {isToday && <span className="today-badge">Heute</span>}
@@ -249,7 +282,10 @@ export default function MealPlan() {
                 const meal = mealObj?.name ?? ''
                 const hasRecipe = !!mealObj?.recipe
                 return (
-                  <div key={mealType} className="meal-row" onClick={() => setEditing({ date: iso, mealType })}>
+                  <div key={mealType} className="meal-row" onClick={() => {
+                    if (mealObj?.recipe) setViewingRecipe({ date: iso, mealType })
+                    else setEditing({ date: iso, mealType })
+                  }}>
                     <div className={`meal-icon-wrap ${mealType}`}>{MEAL_ICONS[mealType]}</div>
                     <div className="meal-info">
                       <div className={`meal-type-label ${mealType}`}>{MEAL_LABELS[mealType]}</div>
@@ -277,6 +313,19 @@ export default function MealPlan() {
           )
         })}
       </div>
+
+      {viewingRecipe && (() => {
+        const mealObj = getMealObj(viewingRecipe.date, viewingRecipe.mealType)
+        if (!mealObj) return null
+        return (
+          <RecipeSheet
+            mealType={viewingRecipe.mealType}
+            meal={mealObj}
+            onEdit={() => { setViewingRecipe(null); setEditing(viewingRecipe) }}
+            onClose={() => setViewingRecipe(null)}
+          />
+        )
+      })()}
 
       {editing && (
         <EditSheet
