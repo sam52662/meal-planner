@@ -44,7 +44,6 @@ Nutze wenn möglich Zutaten aus dem Vorrat. Antworte ausschließlich mit dem Ger
   const json = await res.json()
   const text = json?.candidates?.[0]?.content?.parts?.[0]?.text as string | undefined
   if (!text) {
-    console.error('Gemini response:', JSON.stringify(json))
     throw new Error('Keine Antwort von der KI')
   }
   const result = text.trim().replace(/\.$/, '').split('\n')[0].trim()

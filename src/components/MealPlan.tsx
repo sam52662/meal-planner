@@ -143,6 +143,10 @@ export default function MealPlan() {
   const total = 21
   const editingMeal = editing ? getMeal(editing.date, editing.mealType) : ''
 
+  const [pendingSuggestion, setPendingSuggestion] = useState<{
+    date: string; mealType: MealType; suggestion: string
+  } | null>(null)
+
   async function handleSuggest(date: string, mealType: MealType, e: React.MouseEvent) {
     e.stopPropagation()
     const key = `${date}-${mealType}`
@@ -157,7 +161,7 @@ export default function MealPlan() {
     try {
       const allMeals = data.flatMap(d => d.meals.map(m => m.name))
       const suggestion = await suggestMeal(geminiKey, mealType, inventory, allMeals)
-      updateMeal(date, mealType, suggestion)
+      setPendingSuggestion({ date, mealType, suggestion })
     } catch (err) {
       setSuggestionError(err instanceof Error ? err.message : 'KI-Fehler')
       setTimeout(() => setSuggestionError(null), 4000)
@@ -269,6 +273,32 @@ export default function MealPlan() {
           onDelete={() => updateMeal(editing.date, editing.mealType, '')}
           onClose={() => setEditing(null)}
         />
+      )}
+
+      {pendingSuggestion && (
+        <div className="sheet-overlay" onClick={() => setPendingSuggestion(null)}>
+          <div className="sheet" onClick={e => e.stopPropagation()}>
+            <div className="sheet-handle" />
+            <div className="sheet-title">✨ KI-Vorschlag</div>
+            <div className="sheet-body">
+              <div style={{ textAlign: 'center', padding: '16px 0' }}>
+                <div style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginBottom: 8 }}>
+                  {MEAL_LABELS[pendingSuggestion.mealType]}
+                </div>
+                <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--color-text-primary)' }}>
+                  {pendingSuggestion.suggestion}
+                </div>
+              </div>
+            </div>
+            <div className="sheet-actions">
+              <button className="btn btn-secondary" onClick={() => setPendingSuggestion(null)}>Ablehnen</button>
+              <button className="btn btn-primary" onClick={() => {
+                updateMeal(pendingSuggestion.date, pendingSuggestion.mealType, pendingSuggestion.suggestion)
+                setPendingSuggestion(null)
+              }}>Übernehmen</button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   )
