@@ -269,7 +269,7 @@ body {
   right: 0;
   bottom: 0;
   height: var(--tab-bar-height);
-  padding-top: 6px;
+  padding-top: 0;
   padding-bottom: env(safe-area-inset-bottom, 0px);
   background: var(--color-tab-bar);
   backdrop-filter: blur(20px) saturate(1.8);
