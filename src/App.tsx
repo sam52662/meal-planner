@@ -24,6 +24,15 @@ export default function App() {
         <div className="connection-dot" />
         <span>{CONNECTION_LABELS[status]}</span>
       </div>
+      <div style={{
+        position: 'fixed', top: 60, left: 0, right: 0, zIndex: 9999,
+        background: 'red', color: 'white', fontSize: 11, padding: '4px 8px', textAlign: 'center'
+      }}>
+        safe-bottom: {getComputedStyle(document.documentElement).getPropertyValue('--safe-bottom')} |
+        env: <span style={{fontFamily:'monospace'}} ref={el => {
+          if (el) el.textContent = window.getComputedStyle(document.documentElement).paddingBottom
+        }} />
+      </div>
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         {activeTab === 'meals' && <MealPlan />}
