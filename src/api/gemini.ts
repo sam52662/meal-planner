@@ -43,6 +43,7 @@ Antworte NUR mit gültigem JSON ohne Markdown, exakt in diesem Format:
   if (!text) throw new Error('Keine Antwort von der KI')
 
   const clean = text.trim().replace(/^```[a-z]*\n?/, '').replace(/```$/, '').trim()
+  console.log('Gemini raw:', clean)
   try {
     const parsed = JSON.parse(clean) as { name?: string; recipe?: string }
     if (!parsed.name) throw new Error()
