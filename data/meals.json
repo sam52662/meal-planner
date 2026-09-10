@@ -1,11 +1,6 @@
 [
   {
     "date": "2026-09-07",
-    "meals": [
-      {
-        "type": "breakfast",
-        "name": "Steak mit Ei"
-      }
-    ]
+    "meals": []
   }
 ]
