@@ -25,13 +25,11 @@ export default function App() {
         <span>{CONNECTION_LABELS[status]}</span>
       </div>
       <div style={{
-        position: 'fixed', top: 60, left: 0, right: 0, zIndex: 9999,
-        background: 'red', color: 'white', fontSize: 11, padding: '4px 8px', textAlign: 'center'
+        position: 'fixed', bottom: 120, left: 0, right: 0, zIndex: 9999,
+        background: 'red', color: 'white', fontSize: 13, padding: '8px',
+        textAlign: 'center', fontFamily: 'monospace'
       }}>
-        safe-bottom: {getComputedStyle(document.documentElement).getPropertyValue('--safe-bottom')} |
-        env: <span style={{fontFamily:'monospace'}} ref={el => {
-          if (el) el.textContent = window.getComputedStyle(document.documentElement).paddingBottom
-        }} />
+        safe-bottom CSS var: "{getComputedStyle(document.documentElement).getPropertyValue('--safe-bottom').trim()}"
       </div>
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
