@@ -24,13 +24,6 @@ export default function App() {
         <div className="connection-dot" />
         <span>{CONNECTION_LABELS[status]}</span>
       </div>
-      <div style={{
-        position: 'fixed', bottom: 120, left: 0, right: 0, zIndex: 9999,
-        background: 'red', color: 'white', fontSize: 13, padding: '8px',
-        textAlign: 'center', fontFamily: 'monospace'
-      }}>
-        safe-bottom CSS var: "{getComputedStyle(document.documentElement).getPropertyValue('--safe-bottom').trim()}"
-      </div>
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         {activeTab === 'meals' && <MealPlan />}

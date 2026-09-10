@@ -31,6 +31,7 @@
   --gradient-header: linear-gradient(135deg, #5b6af0 0%, #8b5cf6 100%);
   --gradient-today: linear-gradient(135deg, #5b6af0 0%, #8b5cf6 100%);
   --tab-bar-height: 62px;
+  --tab-bar-total: 96px;
   --radius-sm: 12px;
   --radius-md: 16px;
   --radius-lg: 22px;
@@ -108,7 +109,7 @@ body {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 16px 16px calc(var(--tab-bar-height) + env(safe-area-inset-bottom, 0px) + 8px);
+  padding: 16px 16px calc(var(--tab-bar-total) + 8px);
 }
 
 /* ============================================================
@@ -228,8 +229,8 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  height: calc(var(--tab-bar-height) + env(safe-area-inset-bottom, 0px));
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  height: var(--tab-bar-total);
+  padding-bottom: calc(var(--tab-bar-total) - var(--tab-bar-height));
   background: transparent;
   backdrop-filter: blur(20px) saturate(1.8);
   -webkit-backdrop-filter: blur(20px) saturate(1.8);
