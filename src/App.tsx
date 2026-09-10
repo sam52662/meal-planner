@@ -54,6 +54,7 @@ export default function App() {
           <span className="tab-label">Einstellungen</span>
         </button>
       </nav>
+      <div className="tab-bar-safe-area" />
     </div>
   )
 }
