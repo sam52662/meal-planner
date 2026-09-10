@@ -225,30 +225,23 @@ body {
    ============================================================ */
 .tab-bar {
   position: fixed;
-  bottom: var(--safe-bottom);
+  bottom: 0;
   left: 0;
   right: 0;
-  height: var(--tab-bar-height);
+  height: calc(var(--tab-bar-height) + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);
   background: var(--color-tab-bar);
   backdrop-filter: blur(24px) saturate(1.8);
   -webkit-backdrop-filter: blur(24px) saturate(1.8);
   border-top: 1px solid var(--color-border);
   display: flex;
-  align-items: center;
-  padding-top: 0;
+  align-items: flex-start;
+  padding-top: 8px;
   z-index: 100;
 }
 
 .tab-bar-safe-area {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: var(--safe-bottom);
-  background: var(--color-tab-bar);
-  backdrop-filter: blur(24px) saturate(1.8);
-  -webkit-backdrop-filter: blur(24px) saturate(1.8);
-  z-index: 100;
+  display: none;
 }
 
 .tab-item {
