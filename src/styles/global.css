@@ -30,7 +30,7 @@
   --color-tab-bar: rgba(255, 255, 255, 0.88);
   --gradient-header: linear-gradient(135deg, #5b6af0 0%, #8b5cf6 100%);
   --gradient-today: linear-gradient(135deg, #5b6af0 0%, #8b5cf6 100%);
-  --tab-bar-content-height: 50px;
+  --tab-bar-content-height: 44px;
   --tab-bar-height: calc(var(--tab-bar-content-height) + var(--safe-bottom));
   --radius-sm: 12px;
   --radius-md: 16px;
@@ -152,8 +152,8 @@ body {
   overflow-y: auto;
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
-  padding: 16px 16px calc(var(--tab-bar-height) + 16px);
-  scroll-padding-bottom: calc(var(--tab-bar-height) + 16px);
+  padding: 16px 16px calc(var(--tab-bar-height) - 4px);
+  scroll-padding-bottom: calc(var(--tab-bar-height) - 4px);
 }
 
 /* ============================================================
