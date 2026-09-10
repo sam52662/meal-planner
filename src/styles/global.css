@@ -48,20 +48,20 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-bg: #0a0a0f;
-    --color-surface: rgba(28, 28, 38, 0.9);
-    --color-surface-2: rgba(38, 38, 52, 0.7);
-    --color-surface-raised: #1c1c26;
-    --color-border: rgba(255, 255, 255, 0.07);
-    --color-border-strong: rgba(255, 255, 255, 0.12);
-    --color-text-primary: #f0f0ff;
-    --color-text-secondary: rgba(240, 240, 255, 0.45);
-    --color-text-tertiary: rgba(240, 240, 255, 0.22);
-    --color-accent-light: rgba(91, 106, 240, 0.18);
-    --color-tab-bar: rgba(14, 14, 20, 0.92);
-    --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.2);
-    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.35), 0 1px 4px rgba(0, 0, 0, 0.2);
-    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+    --color-bg: #12121a;
+    --color-surface: rgba(36, 36, 52, 0.95);
+    --color-surface-2: rgba(48, 48, 68, 0.8);
+    --color-surface-raised: #242434;
+    --color-border: rgba(255, 255, 255, 0.10);
+    --color-border-strong: rgba(255, 255, 255, 0.18);
+    --color-text-primary: #f5f5ff;
+    --color-text-secondary: rgba(245, 245, 255, 0.60);
+    --color-text-tertiary: rgba(245, 245, 255, 0.32);
+    --color-accent-light: rgba(91, 106, 240, 0.22);
+    --color-tab-bar: rgba(24, 24, 36, 0.96);
+    --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.25);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45), 0 1px 4px rgba(0, 0, 0, 0.25);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.35);
   }
 }
 
@@ -413,8 +413,13 @@ body {
   background: var(--color-surface);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   overflow: hidden;
+  border: 1px solid var(--color-border);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  transition: box-shadow 0.2s, opacity 0.2s;
+}
   border: 1px solid var(--color-border);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -426,7 +431,7 @@ body {
 }
 
 .day-card .day-header {
-  padding: 11px 16px 9px;
+  padding: 13px 16px 11px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -489,12 +494,12 @@ body {
 .meal-row {
   display: flex;
   align-items: center;
-  padding: 12px 16px;
+  padding: 14px 16px;
   border-bottom: 1px solid var(--color-border);
   gap: 12px;
   cursor: pointer;
   transition: background 0.12s;
-  min-height: 52px;
+  min-height: 60px;
 }
 
 .meal-row:last-child {
@@ -506,14 +511,14 @@ body {
 }
 
 .meal-icon-wrap {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  font-size: 17px;
+  font-size: 20px;
 }
 
 .meal-icon-wrap.breakfast {
@@ -535,10 +540,10 @@ body {
 
 .meal-type-label {
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 1px;
+  letter-spacing: 0.6px;
+  margin-bottom: 2px;
 }
 
 .meal-type-label.breakfast { color: var(--color-breakfast); }
@@ -555,7 +560,7 @@ body {
 }
 
 .meal-text.empty {
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
   font-weight: 400;
 }
 
@@ -685,12 +690,12 @@ body {
 
 .suggest-btn {
   flex-shrink: 0;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  border: none;
-  background: rgba(91, 106, 240, 0.1);
-  font-size: 16px;
+  border: 1px solid rgba(91, 106, 240, 0.3);
+  background: rgba(91, 106, 240, 0.15);
+  font-size: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
