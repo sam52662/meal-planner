@@ -9,22 +9,10 @@ export async function suggestMeal(
   existingMeals: string[]
 ): Promise<string> {
   const mealLabel = mealType === 'breakfast' ? 'Frühstück' : mealType === 'lunch' ? 'Mittagessen' : 'Abendessen'
-
-  const inventoryText = inventory.length > 0
-    ? inventory.map(i => `- ${i.emoji} ${i.name} (${i.quantity} ${i.unit}, ${i.storage === 'freezer' ? 'Tiefkühler' : 'Kühlschrank'})`).join('\n')
-    : 'Keine Artikel vorhanden'
-
   const existingText = existingMeals.filter(Boolean).length > 0
-    ? `\nBereits diese Woche geplant (bitte nicht wiederholen): ${existingMeals.filter(Boolean).join(', ')}`
-    : ''
 
-  const prompt = `Nenne mir ein einziges konkretes Gericht für ${mealLabel}. Nur der Gerichtname, maximal 4 Wörter, auf Deutsch, kein Punkt am Ende.
-
-Vorhandene Zutaten im Vorrat:
-${inventoryText}
-${existingText}
-
-Nutze wenn möglich Zutaten aus dem Vorrat. Antworte ausschließlich mit dem Gerichtnamen.`
+  const prompt = `Schlage ein konkretes Gericht für ${mealLabel} vor.${existingText ? ` Nicht wiederholen: ${existingMeals.filter(Boolean).join(', ')}.` : ''}${inventory.length > 0 ? ` Verfügbare Zutaten: ${inventory.map(i => i.name).join(', ')}.` : ''}
+Antworte NUR mit dem Gerichtnamen auf Deutsch, maximal 4 Wörter, kein Punkt.`
 
   const res = await fetch(`${GEMINI_BASE}?key=${apiKey}`, {
     method: 'POST',
