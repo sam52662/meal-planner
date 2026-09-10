@@ -18,18 +18,13 @@ export async function suggestMeal(
     ? `\nBereits diese Woche geplant (bitte nicht wiederholen): ${existingMeals.filter(Boolean).join(', ')}`
     : ''
 
-  const prompt = `Du bist ein Kochassistent. Schlage ein einzelnes konkretes Gericht für ${mealLabel} vor.
+  const prompt = `Nenne mir ein einziges konkretes Gericht für ${mealLabel}. Nur der Gerichtname, maximal 4 Wörter, auf Deutsch, kein Punkt am Ende.
 
 Vorhandene Zutaten im Vorrat:
 ${inventoryText}
 ${existingText}
 
-Regeln:
-- Antworte NUR mit dem Gerichtsnamen, sonst nichts
-- Maximal 4 Wörter
-- Auf Deutsch
-- Nutze wenn möglich Zutaten aus dem Vorrat
-- Kein Punkt am Ende`
+Nutze wenn möglich Zutaten aus dem Vorrat. Antworte ausschließlich mit dem Gerichtnamen.`
 
   const res = await fetch(`${GEMINI_BASE}?key=${apiKey}`, {
     method: 'POST',
