@@ -30,7 +30,8 @@
   --color-tab-bar: rgba(255, 255, 255, 0.88);
   --gradient-header: linear-gradient(135deg, #5b6af0 0%, #8b5cf6 100%);
   --gradient-today: linear-gradient(135deg, #5b6af0 0%, #8b5cf6 100%);
-  --tab-bar-height: 62px;
+  --tab-bar-content-height: 50px;
+  --tab-bar-height: calc(var(--tab-bar-content-height) + var(--safe-bottom));
   --radius-sm: 12px;
   --radius-md: 16px;
   --radius-lg: 22px;
@@ -146,9 +147,13 @@ body {
 
 .scroll-content {
   flex: 1;
+  min-height: 0;
+  overflow-x: hidden;
   overflow-y: auto;
+  overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
-  padding: 16px 16px 62px;
+  padding: 16px 16px calc(var(--tab-bar-height) + 16px);
+  scroll-padding-bottom: calc(var(--tab-bar-height) + 16px);
 }
 
 /* ============================================================
@@ -268,16 +273,17 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
+  z-index: 100;
   height: var(--tab-bar-height);
-  padding-top: 18px;
-  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 8px);
+  padding: 3px max(8px, var(--safe-right)) var(--safe-bottom) max(8px, var(--safe-left));
+  display: flex;
+  align-items: center;
   background: var(--color-tab-bar);
+  border-top: 1px solid var(--color-border);
+  box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.06);
   backdrop-filter: blur(20px) saturate(1.8);
   -webkit-backdrop-filter: blur(20px) saturate(1.8);
-  border-top: 1px solid var(--color-border);
-  display: flex;
-  align-items: flex-start;
-  z-index: 100;
+  transform: translateZ(0);
 }
 
 .tab-bar-safe-area {
@@ -285,21 +291,25 @@ body {
 }
 
 .tab-item {
+  position: relative;
   flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 2px 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  cursor: pointer;
-  padding: 4px 0;
-  border: none;
-  background: none;
+  justify-content: center;
+  gap: 1px;
+  border: 0;
+  background: transparent;
   color: var(--color-text-tertiary);
-  transition: color 0.2s ease, transform 0.15s ease;
-  min-height: 44px;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   -webkit-user-select: none;
   user-select: none;
-  position: relative;
+  transition: color 0.2s ease, transform 0.15s ease;
 }
 
 .tab-item.active {
@@ -309,24 +319,24 @@ body {
 .tab-item.active::before {
   content: '';
   position: absolute;
-  top: -10px;
+  top: -3px;
   left: 50%;
-  transform: translateX(-50%);
-  width: 32px;
-  height: 3px;
+  width: 24px;
+  height: 2px;
+  border-radius: 999px;
   background: var(--gradient-header);
-  border-radius: 0 0 3px 3px;
+  transform: translateX(-50%);
 }
 
 .tab-item:active {
-  transform: scale(0.9);
+  transform: scale(0.94);
 }
 
 .tab-item svg {
-  width: 22px;
-  height: 22px;
-  stroke-width: 1.8;
-  transition: transform 0.2s ease;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  stroke-width: 1.9;
 }
 
 .tab-item.active svg {
@@ -334,9 +344,14 @@ body {
 }
 
 .tab-item .tab-label {
-  font-size: 10px;
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 9px;
   font-weight: 600;
-  letter-spacing: 0.2px;
+  line-height: 1.1;
+  letter-spacing: 0.1px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ============================================================
@@ -1284,4 +1299,22 @@ body {
 @keyframes slide-up {
   from { transform: translateY(100%); }
   to { transform: translateY(0); }
+}
+
+
+/* ============================================================
+   iOS viewport and Home Indicator fixes
+   ============================================================ */
+@supports (-webkit-touch-callout: none) {
+  html,
+  body,
+  #root,
+  .app-shell {
+    height: 100dvh;
+    min-height: 100dvh;
+  }
+
+  .tab-bar {
+    padding-bottom: max(var(--safe-bottom), 0px);
+  }
 }
