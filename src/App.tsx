@@ -25,7 +25,7 @@ export default function App() {
         <span>{CONNECTION_LABELS[status]}</span>
       </div>
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <div className="tab-content">
         {activeTab === 'meals' && <MealPlan />}
         {activeTab === 'inventory' && <Inventory />}
         {activeTab === 'settings' && <Settings onSaved={check} />}

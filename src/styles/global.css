@@ -79,38 +79,77 @@
 
 html, body {
   height: 100%;
+  min-height: 100%;
   overscroll-behavior: none;
-  background: var(--gradient-header);
+  background: var(--color-bg);
+  padding: 0;
+  margin: 0;
+}
+
+@supports (height: 100dvh) {
+  html, body {
+    height: 100dvh;
+    min-height: 100dvh;
+  }
 }
 
 body {
   font-family: var(--font);
-  background: var(--color-bg);
   color: var(--color-text-primary);
   -webkit-font-smoothing: antialiased;
   overflow: hidden;
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 #root {
   height: 100%;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
+}
+
+@supports (height: 100dvh) {
+  #root {
+    height: 100dvh;
+    min-height: 100dvh;
+  }
 }
 
 /* ============================================================
    Layout Shell
    ============================================================ */
 .app-shell {
+  position: relative;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  width: 100%;
+  height: 100vh;
+  min-height: 100vh;
+  overflow: hidden;
+  background: var(--color-bg);
+}
+
+@supports (height: 100dvh) {
+  .app-shell {
+    height: 100dvh;
+    min-height: 100dvh;
+  }
+}
+
+.tab-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
 }
 
 .scroll-content {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 16px 16px calc(var(--tab-bar-total) + 8px);
+  padding: 16px 16px calc(var(--tab-bar-height) + env(safe-area-inset-bottom, 34px) + 8px);
 }
 
 /* ============================================================
@@ -122,7 +161,7 @@ body {
   justify-content: center;
   gap: 6px;
   padding: 5px 16px;
-  padding-top: calc(5px + var(--safe-top));
+  padding-top: calc(env(safe-area-inset-top, 0px) + 5px);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.3px;
@@ -230,8 +269,8 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  height: var(--tab-bar-total);
-  padding-bottom: calc(var(--tab-bar-total) - var(--tab-bar-height));
+  height: calc(var(--tab-bar-height) + env(safe-area-inset-bottom, 34px));
+  padding-bottom: env(safe-area-inset-bottom, 34px);
   background: var(--color-tab-bar);
   backdrop-filter: blur(20px) saturate(1.8);
   -webkit-backdrop-filter: blur(20px) saturate(1.8);
