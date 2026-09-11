@@ -126,7 +126,7 @@ body {
   overflow-y: auto;
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
-  padding: 16px 16px calc(var(--tab-bar-height) + env(safe-area-inset-bottom, 0px) + 8px);
+  padding: 16px 16px calc(var(--tab-bar-height) + 8px);
 }
 
 /* ============================================================
@@ -247,8 +247,8 @@ body {
   right: 0;
   bottom: 0;
   z-index: 100;
-  height: calc(var(--tab-bar-height) + env(safe-area-inset-bottom, 0px));
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  height: var(--tab-bar-height);
+  padding-bottom: 0;
   display: flex;
   align-items: stretch;
   background: var(--color-tab-bar);
@@ -256,6 +256,16 @@ body {
   box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.06);
   backdrop-filter: blur(20px) saturate(1.8);
   -webkit-backdrop-filter: blur(20px) saturate(1.8);
+}
+
+.tab-bar::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: env(safe-area-inset-bottom, 0px);
+  background: var(--color-tab-bar);
 }
 
 .tab-bar-safe-area {
