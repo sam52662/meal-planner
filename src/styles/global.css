@@ -274,10 +274,10 @@ body {
   right: 0;
   bottom: 0;
   z-index: 100;
-  height: calc(var(--tab-bar-height) + env(safe-area-inset-bottom, 0px));
-  padding: 4px max(8px, var(--safe-right)) env(safe-area-inset-bottom, 0px) max(8px, var(--safe-left));
+  height: calc(50px + env(safe-area-inset-bottom, 0px));
+  padding: 4px 8px env(safe-area-inset-bottom, 0px);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   background: var(--color-tab-bar);
   border-top: 1px solid var(--color-border);
   box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.06);
@@ -1324,9 +1324,5 @@ body {
   .app-shell {
     height: 100dvh;
     min-height: 100dvh;
-  }
-
-  .tab-bar {
-    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 }
