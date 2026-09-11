@@ -30,8 +30,8 @@
   --color-tab-bar: rgba(255, 255, 255, 0.88);
   --gradient-header: linear-gradient(135deg, #5b6af0 0%, #8b5cf6 100%);
   --gradient-today: linear-gradient(135deg, #5b6af0 0%, #8b5cf6 100%);
-  --tab-bar-content-height: 44px;
-  --tab-bar-height: calc(var(--tab-bar-content-height) + var(--safe-bottom));
+  --tab-bar-content-height: 50px;
+  --tab-bar-height: var(--tab-bar-content-height);
   --radius-sm: 12px;
   --radius-md: 16px;
   --radius-lg: 22px;
@@ -274,8 +274,8 @@ body {
   right: 0;
   bottom: 0;
   z-index: 100;
-  height: var(--tab-bar-height);
-  padding: 3px max(8px, var(--safe-right)) var(--safe-bottom) max(8px, var(--safe-left));
+  height: calc(var(--tab-bar-height) + env(safe-area-inset-bottom, 0px));
+  padding: 4px max(8px, var(--safe-right)) env(safe-area-inset-bottom, 0px) max(8px, var(--safe-left));
   display: flex;
   align-items: center;
   background: var(--color-tab-bar);
