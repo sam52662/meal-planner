@@ -1,4 +1,4 @@
-const CACHE_NAME = 'meal-planner-v1'
+const CACHE_NAME = 'meal-planner-v2'
 
 self.addEventListener('install', e => {
   self.skipWaiting()

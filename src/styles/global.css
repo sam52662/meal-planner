@@ -30,8 +30,6 @@
   --color-tab-bar: rgba(255, 255, 255, 0.88);
   --gradient-header: linear-gradient(135deg, #5b6af0 0%, #8b5cf6 100%);
   --gradient-today: linear-gradient(135deg, #5b6af0 0%, #8b5cf6 100%);
-  --tab-bar-content-height: 50px;
-  --tab-bar-height: var(--tab-bar-content-height);
   --radius-sm: 12px;
   --radius-md: 16px;
   --radius-lg: 22px;
@@ -41,10 +39,7 @@
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
   --shadow-accent: 0 8px 24px rgba(91, 106, 240, 0.35);
   --font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
-  --safe-top: env(safe-area-inset-top, 0px);
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --safe-left: env(safe-area-inset-left, 0px);
-  --safe-right: env(safe-area-inset-right, 0px);
+  --tab-bar-height: 56px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -78,18 +73,10 @@
 
 html, body {
   height: 100%;
-  min-height: 100%;
   overscroll-behavior: none;
   background: var(--color-bg);
   padding: 0;
   margin: 0;
-}
-
-@supports (height: 100dvh) {
-  html, body {
-    height: 100dvh;
-    min-height: 100dvh;
-  }
 }
 
 body {
@@ -98,21 +85,17 @@ body {
   background: var(--color-bg);
   -webkit-font-smoothing: antialiased;
   overflow: hidden;
-  min-height: 100vh;
-  min-height: 100dvh;
 }
 
 #root {
   height: 100%;
-  min-height: 100%;
   display: flex;
   flex-direction: column;
 }
 
 @supports (height: 100dvh) {
-  #root {
+  html, body, #root {
     height: 100dvh;
-    min-height: 100dvh;
   }
 }
 
@@ -120,29 +103,20 @@ body {
    Layout Shell
    ============================================================ */
 .app-shell {
-  position: relative;
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: 100vh;
-  min-height: 100vh;
+  height: 100%;
   overflow: hidden;
   background: var(--color-bg);
 }
 
-@supports (height: 100dvh) {
-  .app-shell {
-    height: 100dvh;
-    min-height: 100dvh;
-  }
-}
-
 .tab-content {
   flex: 1;
+  min-height: 0;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  min-height: 0;
 }
 
 .scroll-content {
@@ -152,8 +126,7 @@ body {
   overflow-y: auto;
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
-  padding: 16px 16px calc(var(--tab-bar-height) - 4px);
-  scroll-padding-bottom: calc(var(--tab-bar-height) - 4px);
+  padding: 16px 16px calc(var(--tab-bar-height) + env(safe-area-inset-bottom, 0px) + 8px);
 }
 
 /* ============================================================
@@ -274,16 +247,15 @@ body {
   right: 0;
   bottom: 0;
   z-index: 100;
-  height: calc(50px + env(safe-area-inset-bottom, 0px));
-  padding: 4px 8px env(safe-area-inset-bottom, 0px);
+  height: calc(var(--tab-bar-height) + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   display: flex;
-  align-items: flex-start;
+  align-items: stretch;
   background: var(--color-tab-bar);
   border-top: 1px solid var(--color-border);
   box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.06);
   backdrop-filter: blur(20px) saturate(1.8);
   -webkit-backdrop-filter: blur(20px) saturate(1.8);
-  transform: translateZ(0);
 }
 
 .tab-bar-safe-area {
@@ -303,16 +275,14 @@ body {
 }
 
 .tab-item {
-  position: relative;
   flex: 1;
   min-width: 0;
-  min-height: 44px;
-  padding: 2px 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1px;
+  gap: 3px;
+  padding: 8px 0;
   border: 0;
   background: transparent;
   color: var(--color-text-tertiary);
@@ -321,7 +291,8 @@ body {
   -webkit-tap-highlight-color: transparent;
   -webkit-user-select: none;
   user-select: none;
-  transition: color 0.2s ease, transform 0.15s ease;
+  transition: color 0.2s ease;
+  position: relative;
 }
 
 .tab-item.active {
@@ -331,7 +302,7 @@ body {
 .tab-item.active::before {
   content: '';
   position: absolute;
-  top: -3px;
+  top: 0;
   left: 50%;
   width: 24px;
   height: 2px;
@@ -341,12 +312,12 @@ body {
 }
 
 .tab-item:active {
-  transform: scale(0.94);
+  opacity: 0.7;
 }
 
 .tab-item svg {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   flex-shrink: 0;
   stroke-width: 1.9;
 }
@@ -356,13 +327,10 @@ body {
 }
 
 .tab-item .tab-label {
-  max-width: 100%;
-  overflow: hidden;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
-  line-height: 1.1;
+  line-height: 1;
   letter-spacing: 0.1px;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -1043,7 +1011,7 @@ body {
    ============================================================ */
 .fab {
   position: fixed;
-  bottom: calc(var(--tab-bar-height) + 20px + var(--safe-bottom));
+  bottom: calc(var(--tab-bar-height) + env(safe-area-inset-bottom, 0px) + 20px);
   right: 20px;
   width: 54px;
   height: 54px;
@@ -1090,7 +1058,7 @@ body {
   width: 100%;
   background: var(--color-surface-raised);
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-  padding: 0 0 calc(16px + var(--safe-bottom));
+  padding: 0 0 calc(16px + env(safe-area-inset-bottom, 0px));
   animation: slide-up 0.32s cubic-bezier(0.32, 0.72, 0, 1);
   max-height: 92vh;
   overflow-y: auto;
@@ -1288,7 +1256,7 @@ body {
   height: 2px;
   background: var(--gradient-header);
   position: fixed;
-  top: var(--safe-top);
+  top: env(safe-area-inset-top, 0px);
   left: 0;
   right: 0;
   z-index: 1000;
@@ -1314,15 +1282,3 @@ body {
 }
 
 
-/* ============================================================
-   iOS viewport and Home Indicator fixes
-   ============================================================ */
-@supports (-webkit-touch-callout: none) {
-  html,
-  body,
-  #root,
-  .app-shell {
-    height: 100dvh;
-    min-height: 100dvh;
-  }
-}
