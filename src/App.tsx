@@ -54,6 +54,7 @@ export default function App() {
           <span className="tab-label">Einstellungen</span>
         </button>
       </nav>
+      <div className="build-tag">v{__BUILD_TIME__}</div>
       <div className="tab-bar-safe-area" />
     </div>
   )
