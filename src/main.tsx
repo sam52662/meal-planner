@@ -11,11 +11,17 @@ if ('serviceWorker' in navigator) {
         const newWorker = reg.installing
         if (!newWorker) return
         newWorker.addEventListener('statechange', () => {
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+          if (newWorker.state === 'installed') {
+            // Zeige Banner — egal ob controller vorhanden oder nicht
             showUpdateBanner(newWorker)
           }
         })
       })
+    })
+
+    // Reload wenn neuer SW die Kontrolle übernimmt
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      window.location.reload()
     })
   })
 }

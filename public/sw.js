@@ -1,7 +1,7 @@
-const CACHE_NAME = 'meal-planner-v2'
+const CACHE_NAME = 'meal-planner-v3'
 
-self.addEventListener('install', e => {
-  self.skipWaiting()
+self.addEventListener('install', () => {
+  // Warten bis der Client explizit SKIP_WAITING sendet
 })
 
 self.addEventListener('activate', e => {
@@ -15,7 +15,6 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url)
 
-  // Nur GET-Requests cachen, keine GitHub API Calls
   if (e.request.method !== 'GET') return
   if (url.hostname === 'api.github.com') return
   if (url.hostname === 'generativelanguage.googleapis.com') return
@@ -27,14 +26,12 @@ self.addEventListener('fetch', e => {
           if (response.ok) cache.put(e.request, response.clone())
           return response
         })
-        // Cache-first: sofort aus Cache, im Hintergrund aktualisieren
         return cached || fetchPromise
       })
     )
   )
 })
 
-// Auf Nachricht vom Client: sofort neu laden
 self.addEventListener('message', e => {
   if (e.data === 'SKIP_WAITING') self.skipWaiting()
 })
