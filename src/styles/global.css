@@ -1327,6 +1327,6 @@ body {
   }
 
   .tab-bar {
-    padding-bottom: max(var(--safe-bottom), 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 }
